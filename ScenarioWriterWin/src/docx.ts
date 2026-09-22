@@ -29,6 +29,8 @@ function buildDocumentXML(f: M.ScwdFile, tpl: TemplateData, cover: CoverInfo): s
   const sn = (n: string) => tpl.snippets[n] ?? "";
   const chars = new Map(f.characters.map((c) => [c.id, c]));
   const nameW = Math.max(f.setting.characterLength, 2);
+  // 前後の余白は、罫線などの段落書式が続くように「台詞と同じ書式の空行」で入れる（<w:p/> だと罫線が途切れる）
+  const blank = fill(sn("line"), { CHARACTER_DIV: "", LINE: "" });
   let xml = sn("header");
   xml += fill(sn("cover"), {
     TITLE: wt(f.scenario.title), SUBTITLE: wt(f.scenario.subtitle), DATE: wt(cover.date ? M.wareki(cover.date) : ""), VERSION: wt(cover.version),
@@ -49,14 +51,14 @@ function buildDocumentXML(f: M.ScwdFile, tpl: TemplateData, cover: CoverInfo): s
       const label = !name && !abbr ? "" : !name ? abbr : !abbr ? name : name + "　" + abbr;
       const text = st.kagi ? M.kagikakko(line.text) : line.text;
       const body = M.toFullWidth(text, true);
-      xml += "<w:p/>".repeat(st.marginBefore);
+      xml += blank.repeat(st.marginBefore);
       if (st.indent > 0) {
         // ト書など: 見出しを右寄せ（末尾 N 文字）
         xml += fill(sn("togaki"), { CHARACTER_DIV: wt(M.padLeft(label, nameW)), LINE: wt(body) });
       } else {
         xml += fill(sn("line"), { CHARACTER_DIV: wt(label), LINE: wt(body) });
       }
-      xml += "<w:p/>".repeat(st.marginAfter);
+      xml += blank.repeat(st.marginAfter);
     }
   }
   xml += sn("bodyEnd");

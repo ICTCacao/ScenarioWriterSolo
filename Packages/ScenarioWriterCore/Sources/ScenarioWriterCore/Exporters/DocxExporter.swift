@@ -132,6 +132,8 @@ public enum DocxExporter {
         let sceneSnippet = try snippet(template, "scene")
         let lineSnippet = try snippet(template, "line")
         let togakiSnippet = try snippet(template, "togaki")
+        // 前後の余白は、罫線などの段落書式が続くように「台詞と同じ書式の空行」で入れる（<w:p/> だと罫線が途切れる）
+        let blank = fill(lineSnippet, ["CHARACTER_DIV": "", "LINE": ""])
         for scene in doc.scenes {
             xml += fill(sceneSnippet, ["SCENE_NAME": wt(scene.name), "SCENE_DESC": wt(scene.description)])
             for line in doc.lines(of: scene) {
@@ -146,8 +148,8 @@ public enum DocxExporter {
                 case (false, false): label = name + "　" + abbr
                 }
                 let body = TextFormat.toFullWidth(f.text, asciiSymbols: true)
-                xml += String(repeating: "<w:p/>", count: f.style.marginBefore)
-                defer { xml += String(repeating: "<w:p/>", count: f.style.marginAfter) }
+                xml += String(repeating: blank, count: f.style.marginBefore)
+                defer { xml += String(repeating: blank, count: f.style.marginAfter) }
                 if f.style.indent > 0 {
                     // ト書など: 見出しを右寄せ（Web 版は全角空白 10 個を前置して末尾 N 文字）
                     let head = TextFormat.padLeft(label, to: nameW)
