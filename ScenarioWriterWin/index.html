@@ -9,11 +9,13 @@
   </head>
   <body>
     <header class="toolbar">
-      <button id="btnNew" title="新しい作品（Ctrl+N）">新規</button>
-      <button id="btnOpen" title="作品ファイルを開く（Ctrl+O）">開く…</button>
-      <button id="btnSave" title="保存（Ctrl+S）">保存</button>
-      <button id="btnSaveAs" title="別名で保存（Ctrl+Shift+S）">別名で保存…</button>
-      <span class="sep"></span>
+      <span id="fileButtons">
+        <button id="btnNew" title="新しい作品（Ctrl+N）">新規</button>
+        <button id="btnOpen" title="作品ファイルを開く（Ctrl+O）">開く…</button>
+        <button id="btnSave" title="保存（Ctrl+S）">保存</button>
+        <button id="btnSaveAs" title="別名で保存（Ctrl+Shift+S）">別名で保存…</button>
+        <span class="sep"></span>
+      </span>
       <button id="btnVertical" class="toggle" title="編集の書き方向（Ctrl+Alt+T）">縦書き</button>
       <label class="fs">文字 <input id="fontSize" type="range" min="12" max="28" step="1" value="16" /></label>
       <span class="sep"></span>
@@ -29,6 +31,7 @@
           <button data-section="synopsis">シノプシス</button>
           <button data-section="info">シナリオ情報</button>
           <button data-section="read">読む</button>
+          <button data-section="styles">スタイル</button>
         </nav>
         <h3>台本（場面ごと）</h3>
         <ul id="sceneList" class="list"></ul>
@@ -59,9 +62,10 @@
         <section id="secCast" class="section form" hidden></section>
         <section id="secSynopsis" class="section" hidden>
           <p class="muted">あらすじ・梗概。「読む」画面の冒頭に入ります。</p>
-          <textarea id="synopsis" class="synopsis"></textarea>
+          <div id="synopsisWrap" class="synwrap"><textarea id="synopsis" class="synopsis"></textarea></div>
         </section>
         <section id="secInfo" class="section form" hidden></section>
+        <section id="secStyles" class="section form" hidden></section>
         <section id="secRead" class="section read" hidden>
           <iframe id="reader" title="読む"></iframe>
         </section>

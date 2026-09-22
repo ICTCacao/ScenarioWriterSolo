@@ -11,12 +11,13 @@ Windows 向けの脚本エディタです。画面は HTML / CSS / TypeScript、
 - 作品ファイルを開く・保存・別名で保存・新規（Ctrl+O / Ctrl+S / Ctrl+Shift+S / Ctrl+N）。`.scwd` をダブルクリックしても開く
 - 台本の編集: 縦書き / 横書き（Ctrl+Alt+T）、種別と登場人物の選択、行の追加（Ctrl+Enter、Shift で上に）・移動（Ctrl+Alt+矢印）・削除、Tab / Shift+Tab で前後の行へ
 - 本文は 設定の「本文の文字数」（−字下げ）で折り返し、文字の大きさと色はスタイルに従う（Mac 版と同じ）
-- 場面（追加・名前・有効・時間・説明）、登場人物（追加・並べ替え・人物設定）、シノプシス、シナリオ情報と書式
+- 場面（追加・名前・有効・時間・説明）、登場人物（追加・並べ替え・人物設定）、シノプシス、シナリオ情報と書式。縦書きのときは場面・登場人物・シノプシスも縦書き
+- Windows 標準のメニューバー（ファイル / 編集 / 表示 / 設定 / ヘルプ）。ショートカットはメニュー側で受ける
+- スタイル（設定 › スタイル…、Ctrl+7）: 行の種別ごとの名前・並び順・サイズ・色・字下げ・省略文字・表示の仕方・前後の余白を表の中で直接編集。追加・削除・既定に戻す・サイズ一括設定。固定スタイル（シノプシス・場面説明・登場人物）も同じ表で（名前と削除は不可）。作品ファイルに保存され、次の新規作品にも引き継がれる
 - 読む（Mac 版と同じ HTML。縦書き / 横書き、文字サイズ、場面ジャンプ）
 - 最近使った作品
 
-まだ無いもの: テキスト / Word / HTML ファイルの書き出し、スタイルの編集画面（作品ファイルに入っているスタイルをそのまま使う）、
-行の操作の「元に戻す」（本文の文字入力は textarea の Ctrl+Z が効く）、Web 版データの取り込み。
+まだ無いもの: テキスト / Word / HTML ファイルの書き出し、行の操作の「元に戻す」（本文の文字入力は textarea の Ctrl+Z が効く）、Web 版データの取り込み。
 
 ## 開発
 
@@ -29,8 +30,16 @@ npm run tauri dev -- -- 作品.scwd      # 起動時に作品を開く
 npm run tauri build                    # 配布物（Windows: NSIS の setup.exe と msi / Mac: .app と .dmg）
 ```
 
-Windows 用のインストーラは Windows 機が無くても作れます。GitHub に push して Actions（`.github/workflows/build.yml`）を
-動かすと、Artifacts に `setup.exe` と `.msi` ができます。
+Windows 用のインストーラは Windows 機が無くても作れます。
+
+- **この Mac で作る**（Tauri の実験的なクロスビルド。`brew install nsis llvm`、`rustup target add x86_64-pc-windows-msvc`、`cargo install cargo-xwin` のあと）:
+  ```bash
+  PATH="/opt/homebrew/opt/llvm/bin:$PATH" npm run tauri build -- --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis
+  # → src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/ScenarioWriterWin_<版>_x64-setup.exe
+  #   （生の exe は src-tauri/target/x86_64-pc-windows-msvc/release/scenariowriterwin.exe。WebView2 があれば単体で動く）
+  ```
+  署名はしないので、Windows で最初に開くとき SmartScreen の「詳細情報 → 実行」が要ります。
+- **GitHub Actions**: リポジトリ直下の `.github/workflows/build.yml` を動かすと、Artifacts に `setup.exe` と `.msi`（と Linux の deb / AppImage）ができます。
 
 ふつうのブラウザで画面だけ確かめたいときは、`public/sample.scwd` を置いて `npm run dev` → `http://localhost:1420/?sample=1`（保存はできません）。
 

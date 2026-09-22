@@ -1,0 +1,60 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>ScenarioWriterSolo（Windows 版）マニュアル</title><style>
+body { font-family: -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; font-size: 11pt; line-height: 1.7; color: #222; max-width: 720px; margin: 0 auto; padding: 24px; }
+h1 { font-size: 22pt; border-bottom: 2px solid #8b523a; padding-bottom: 6px; }
+h2 { font-size: 15pt; margin-top: 28px; border-left: 5px solid #f7931e; padding-left: 8px; page-break-after: avoid; }
+h3 { font-size: 12pt; margin-top: 18px; }
+table { border-collapse: collapse; margin: 8px 0; font-size: 10pt; page-break-inside: avoid; width: 100%; }
+th:first-child, td:first-child { white-space: nowrap; }
+th, td { border: 1px solid #ccc; padding: 4px 8px; vertical-align: top; }
+th { background: #f3f1ec; text-align: left; }
+code { background: #f3f1ec; padding: 1px 4px; border-radius: 3px; font-size: 10pt; }
+figure { margin: 10px 0; page-break-inside: avoid; }
+img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
+li { margin: 2px 0; }
+</style></head><body><h1>ScenarioWriterSolo（Windows 版）マニュアル</h1>
+<p>版 0.5　2026 年 9 月</p>
+<p>ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。この Windows 版は、Mac 版 ScenarioWriterSolo と同じ作品ファイル（<code>タイトル.scwd</code>）を読み書きします。縦書きでの編集が目玉です。</p>
+<h2>1. インストール</h2>
+<ol><li><code>ScenarioWriterWin_0.5.0_x64-setup.exe</code> をダブルクリックします。</li><li>「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。</li><li>画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、<code>.scwd</code> ファイルがこのアプリに関連付けられます。</li></ol>
+<p>インストールせずに使うときは <code>ScenarioWriterWin-0.5.0-x64-portable.exe</code> をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 <code>.scwd</code> の関連付けはされません）。</p>
+<p>アンインストールは「設定 › アプリ」から。作品ファイルは消えません。</p>
+<h2>2. 作品ファイル</h2>
+<ul><li>作品は 1 つずつ <code>タイトル.scwd</code> というファイルです。中身は文字（JSON）なので、Mac 版と相互に持ち運べます。</li><li><b>Mac 版で β5 より前に作った <code>.scwd</code> は開けません</b>。Mac 版で開いて保存するか、「ファイル › 旧形式（SQLite）の作品ファイルをまとめて変換…」で新しい形式にしてから持ってきてください。</li><li>ふつうの書類アプリと同じで、編集した内容は <b>Ctrl+S で保存</b> します。未保存の変更があると、題名の横に「未保存の変更あり」と出ます。閉じるときに保存するか聞きます。</li><li>「ファイル › 最近使った作品」の代わりに、作品を開いていないときの画面に最近開いたファイルが並びます。</li></ul>
+<h2>3. 画面の構成</h2>
+<figure><img src="img/vertical.png" alt="台本の編集（縦書き）"></figure>
+<ul><li><b>メニューバー</b>: ファイル / 編集 / 表示 / 設定 / ヘルプ。よく使う操作はショートカットもあります（後述）。</li><li><b>ツールバー</b>: 縦書き / 横書きの切り替え、編集画面の文字の大きさ、いま開いている作品の題名。</li><li><b>左の一覧</b>: 画面（シナリオ編集・場面・登場人物・シノプシス・シナリオ情報・読む・スタイル）、台本（場面ごと、行数つき）、登場人物。場面をクリックするとその場面の台本に、登場人物をクリックすると登場人物の画面に移ります。</li></ul>
+<h2>4. 台本を書く（シナリオ編集）</h2>
+<figure><img src="img/horizontal.png" alt="台本の編集（横書き）"></figure>
+<p>1 行が「種別」「登場人物」「本文」の組です。上のバーで場面を選び、「＋ 行を追加」で末尾に行を足します。</p>
+<ul><li><b>種別</b>（セリフ・ト書・歌詞・ナレーション…）を選ぶと、色や字下げ、名前を出すかどうか、「」で囲むかがスタイルどおりに変わります。</li><li><b>登場人物</b>は、名前を出す種別のときだけ選べます。</li><li><b>本文</b>はそのまま打ちます。日本語入力も縦書きのまま使えます。本文は「シナリオ情報」の「本文 1 行の文字数」（既定 32 文字、字下げのぶんは引く）で折り返します。「読む」画面やテキスト出力と同じ折り返しです。</li><li>行の右上（縦書きでは種別の隣）の「⋯」から、前後に行を足す・前後へ動かす・削除ができます。</li></ul>
+<h3>キー操作（本文の中で）</h3>
+<table><thead><tr><th>キー</th><th>動き</th></tr></thead><tbody><tr><td>Tab / Shift+Tab</td><td>次の行 / 前の行へ（縦書きでは左 / 右の列へ）</td></tr><tr><td>Ctrl+Enter</td><td>この行の後に行を追加（Shift を足すと前に）</td></tr><tr><td>Ctrl+↓ / Ctrl+↑（横書き）、Ctrl+← / Ctrl+→（縦書き）</td><td>次の行 / 前の行へ</td></tr><tr><td>Ctrl+Alt+矢印</td><td>行を前後に動かす</td></tr><tr><td>Ctrl+Z</td><td>打った文字を元に戻す（その欄の中だけ）</td></tr><tr><td>Esc</td><td>欄から抜ける</td></tr></tbody></table>
+<h3>縦書きと横書き</h3>
+<p>ツールバーの「縦書き / 横書き」か Ctrl+Alt+T で切り替えます。縦書きでは行が右から左へ並び、各行の本文は上から下へ書きます。場面・登場人物・シノプシスの画面も縦書きになります。この設定はアプリが覚えていて、作品ファイルには入りません。</p>
+<h2>5. 場面</h2>
+<figure><img src="img/scenes.png" alt="場面"></figure>
+<p>場面名（柱）、有効 / 無効、上演時間の目安、場面説明を書きます。場面説明は台本の柱の下に出ます。「台本」ボタンでその場面の台本へ。左の一覧の「＋ 場面を追加」で場面を足します。</p>
+<h2>6. 登場人物</h2>
+<figure><img src="img/cast.png" alt="登場人物"></figure>
+<p>登場人物名と人物設定（年齢・性格など）を書きます。人物設定は「読む」画面の人物表に出ます。↑↓（縦書きでは → ←）で並び順を変え、「削除」で消します（その人物の台詞は名前なしになりますが、台詞そのものは残ります）。</p>
+<h2>7. シノプシス</h2>
+<figure><img src="img/synopsis.png" alt="シノプシス"></figure>
+<p>あらすじ・梗概です。「読む」画面の冒頭に入ります。縦書きのときは、本文と同じ文字数で折り返した縦書きの欄になります。</p>
+<h2>8. シナリオ情報と書式</h2>
+<figure><img src="img/info.png" alt="シナリオ情報"></figure>
+<p>題名・副題・作者名・分類・メモと、この作品の書式（見出し欄の文字数、本文 1 行の文字数、台詞を「」で囲むか）です。書式は作品ファイルに保存されます。</p>
+<h2>9. 読む</h2>
+<figure><img src="img/read.png" alt="読む"></figure>
+<p>台本を通し読みする画面です。Mac 版や Web 版の「劇団員プレビュー」と同じ見た目で、登場人物表・シノプシス・場面ごとの柱と台詞が並びます。上のバーで縦書き / 横書き、文字の大きさを変え、「場面」から場面へ飛べます。</p>
+<h2>10. スタイル</h2>
+<figure><img src="img/styles.png" alt="スタイル"></figure>
+<p>行の「種別」ごとの見た目です。表の中でそのまま直せます。</p>
+<table><thead><tr><th>項目</th><th>意味</th></tr></thead><tbody><tr><td>順</td><td>種別メニューに並ぶ順</td></tr><tr><td>スタイル名</td><td>種別の名前</td></tr><tr><td>番号</td><td>台詞の種別番号（変えられません）</td></tr><tr><td>サイズ</td><td>文字の大きさ。12 が基準で、編集画面・読む画面ともこの比率で大きくなります</td></tr><tr><td>色</td><td>文字の色</td></tr><tr><td>字下げ</td><td>本文の頭を下げる文字数</td></tr><tr><td>省略文字</td><td>名前を出さない種別で本文の前に付く印（NA / M / SE など）</td></tr><tr><td>余白 前 / 後</td><td>「読む」画面で行の前後に空ける行数（0〜4）</td></tr><tr><td>表示の仕方</td><td>登場人物名を出すか、台詞を「」で囲むか</td></tr></tbody></table>
+<p>「＋ USER STYLE 追加」で種別を足し、「削除」で消します（その種別を使っていた行は「種別 N」として残ります）。「既定に戻す」で最初の 13 種に戻ります。下の 3 行（シノプシス・場面説明・登場人物）は固定スタイルで、大きさ・色・字下げ・余白だけ変えられます。</p>
+<p>スタイルは作品ファイルに保存されます。次に新しい作品を作るときは、最後に保存した作品のスタイルが引き継がれます。</p>
+<h2>11. メニューとショートカット</h2>
+<table><thead><tr><th>メニュー</th><th>項目</th><th>ショートカット</th></tr></thead><tbody><tr><td>ファイル</td><td>新規… / 開く… / 保存 / 別名で保存… / 作品を閉じる / 終了</td><td>Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S / Ctrl+W</td></tr><tr><td>編集</td><td>元に戻す・やり直す・切り取り・コピー・貼り付け・すべて選択、行の追加・削除、場面を追加、登場人物を追加</td><td>（本文の中では Ctrl+Z / Ctrl+X / Ctrl+C / Ctrl+V など通常どおり）</td></tr><tr><td>表示</td><td>シナリオ編集〜スタイルの各画面、前後の場面、縦書きで編集、文字を大きく / 小さく</td><td>Ctrl+1〜7、Ctrl+[ / ]、Ctrl+Alt+T、Ctrl+= / Ctrl+-</td></tr><tr><td>設定</td><td>書式（本文の文字数・「」）…、スタイル…</td><td></td></tr><tr><td>ヘルプ</td><td>バージョン情報</td><td></td></tr></tbody></table>
+<h2>12. Mac 版との違い（この版でまだ無いもの）</h2>
+<ul><li>テキスト / Word / HTML ファイルの書き出し（Mac 版で開いて書き出してください）</li><li>Web 版 ScenarioWriterCafe のデータの取り込み</li><li>行の追加・移動・削除の「元に戻す」（本文の文字入力は Ctrl+Z が効きます）</li><li>共通の設定ファイル（スタイルと書式は作品ファイルごとです）</li></ul>
+<h2>13. 困ったとき</h2>
+<ul><li><b>作品ファイルを開けません（旧形式）</b>: Mac 版 β5 以降で開いて保存すると開けるようになります。</li><li><b>文字が小さい / 大きい</b>: ツールバーの「文字」で編集画面の大きさを変えられます。「読む」画面は A- / A+ で。</li><li><b>アイコンが古いまま</b>: インストールし直したあとも変わらないときは、いったんサインアウトするか、コマンドプロンプトで <code>ie4uinit.exe -show</code> を実行してください。</li><li><b>問題の報告</b>: ICTCacao（dbu@ictcacao.com）まで。作品ファイルと、出ていたメッセージを添えてもらえると助かります。</li></ul></body></html>

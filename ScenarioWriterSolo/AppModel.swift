@@ -1240,6 +1240,57 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// β5 より前の作品ファイル（SQLite）を、フォルダの中でまとめて JSON にする。元のファイルは「旧形式」フォルダに移して残す。
+    /// Windows 版は JSON しか読めないので、古いファイルが残っているときに使う
+    func convertLegacyWorks() {
+        guard confirmDiscardIfDirty(action: "変換する") else { return }
+        closeWork(discardChanges: true)
+        let p = NSOpenPanel()
+        p.message = "旧形式（SQLite）の作品ファイルが入っているフォルダを選びます。中の .scwd を新しい形式（JSON）に書き換え、元のファイルは「旧形式」フォルダに移します。"
+        p.prompt = "このフォルダを変換"
+        p.canChooseDirectories = true
+        p.canChooseFiles = false
+        p.allowsMultipleSelection = false
+        p.directoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        guard p.runModal() == .OK, let folder = p.url else { return }
+        let scoped = folder.startAccessingSecurityScopedResource()
+        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+        let fm = FileManager.default
+        let names = ((try? fm.contentsOfDirectory(atPath: folder.path)) ?? []).filter { $0.hasSuffix(".scwd") && !$0.hasPrefix(".") }.sorted()
+        var converted = 0, already = 0
+        var failed: [String] = []
+        let backupDir = folder.appendingPathComponent("旧形式", isDirectory: true)
+        for name in names {
+            let url = folder.appendingPathComponent(name)
+            guard let data = try? Data(contentsOf: url) else { failed.append(name); continue }
+            guard ScenarioFile.isSQLite(data) else { already += 1; continue }
+            let tmp = Self.workDirectory.appendingPathComponent("conv-\(UUID().uuidString).sqlite")
+            defer { try? fm.removeItem(at: tmp) }
+            do {
+                try fm.createDirectory(at: Self.workDirectory, withIntermediateDirectories: true)
+                try data.write(to: tmp)
+                let s = try ScenarioStore(url: tmp)
+                guard let id = try s.firstScenarioId() else { throw NSError(domain: "ScenarioWriterSolo", code: 2, userInfo: [NSLocalizedDescriptionKey: "作品が入っていません"]) }
+                let json = try s.exportFile(scenarioId: id, app: Self.appVersionString).encode()
+                try fm.createDirectory(at: backupDir, withIntermediateDirectories: true)
+                let backup = backupDir.appendingPathComponent(name)
+                try? fm.removeItem(at: backup)
+                try fm.moveItem(at: url, to: backup)
+                try json.write(to: url, options: .atomic)
+                converted += 1
+            } catch {
+                failed.append("\(name)（\(error.localizedDescription)）")
+            }
+        }
+        loadRecents()
+        var msg = "\(converted) 件を新しい形式にしました。"
+        if already > 0 { msg += "\(already) 件はすでに新しい形式でした。" }
+        if converted > 0 { msg += "元のファイルは「旧形式」フォルダに残しています。" }
+        if !failed.isEmpty { msg += "変換できなかったもの: " + failed.joined(separator: "、") }
+        if converted == 0 && failed.isEmpty && already == 0 { msg = "このフォルダに .scwd ファイルがありません。" }
+        if failed.isEmpty { infoMessage = msg } else { errorMessage = msg }
+    }
+
     /// 1.0.0 の全作品入り DB を作品ファイルに分ける
     func migrateLegacy() {
         let legacy = Self.legacyDatabaseURL

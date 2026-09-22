@@ -45,7 +45,8 @@
           "Japanese",
           "English"
         ],
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "installerHooks": "../nsis/hooks.nsh"
       }
     },
     "fileAssociations": [
@@ -58,6 +59,9 @@
         "mimeType": "application/json",
         "role": "Editor"
       }
+    ],
+    "resources": [
+      "icons/scwd.ico"
     ]
   }
 }

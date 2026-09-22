@@ -1,10 +1,15 @@
 // ScenarioWriterSolo Windows 版の Rust 側。ファイルの読み書きだけを受け持つ（画面は src/ の TypeScript）。
 use std::fs;
 
-/// 作品ファイル（UTF-8 のテキスト）を読む
+/// 作品ファイル（UTF-8 のテキスト）を読む。β5 より前の Mac 版が作った SQLite のファイルは分かる言葉で断る
 #[tauri::command]
 fn read_text_file(path: String) -> Result<String, String> {
-    fs::read_to_string(&path).map_err(|e| format!("{}: {}", path, e))
+    let bytes = fs::read(&path).map_err(|e| format!("{}: {}", path, e))?;
+    if bytes.starts_with(b"SQLite format 3") {
+        return Err("このファイルは旧形式（SQLite）の作品ファイルです。Mac 版 ScenarioWriterSolo（β5 以降）で開いて保存すると新しい形式（JSON）になり、Windows 版でも開けます。".to_string());
+    }
+    let text = String::from_utf8(bytes).map_err(|_| "ScenarioWriter の作品ファイル（UTF-8 の JSON）ではありません".to_string())?;
+    Ok(text.trim_start_matches('\u{feff}').to_string())
 }
 
 /// 作品ファイルを書く。いったん隣に書いてから置き換えるので、途中で失敗しても元のファイルは壊れない
