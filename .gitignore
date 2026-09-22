@@ -1,0 +1,19 @@
+.DS_Store
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.build/
+.swiftpm/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+# 配布物: dmg は残し、.app はビルドで再生成する
+dist/*.app
+dist/.tmp-*.dmg
+
+# Windows 版（ScenarioWriterWin: Tauri）
+ScenarioWriterWin/node_modules/
+ScenarioWriterWin/dist/
+ScenarioWriterWin/src-tauri/target/
+ScenarioWriterWin/src-tauri/gen/schemas/
+# 動作確認用の作品ファイル（本人の脚本なので公開しない）
+ScenarioWriterWin/public/sample.scwd

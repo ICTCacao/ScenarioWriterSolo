@@ -1,0 +1,6 @@
+<w:p w:rsidR="00D642BF" w:rsidRDefault="002423BD" w:rsidP="00D642BF"><w:pPr><w:pStyle w:val="af0"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{CHARACTER_NAME}}</w:t>
+</w:r><w:r w:rsidRPr="00D0775A"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:tab/>
+<w:t>{{CHARACTER_CHARA}}</w:t>
+</w:r>
+</w:p>

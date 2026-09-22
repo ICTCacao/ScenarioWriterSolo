@@ -1,0 +1,14 @@
+					
+					<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3">
+						<w:pPr><w:pStyle w:val="af"/></w:pPr>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- 登場人物名 -->
+							<w:t>{{CHARACTER_NAME}}</w:t>
+						</w:r>
+						<w:r w:rsidRPr="00D0775A"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- tab -->
+							<w:tab/>
+							<!-- 登場人物説明 -->
+							<w:t>{{CHARACTER_CHARA}}</w:t>
+						</w:r>
+					</w:p>

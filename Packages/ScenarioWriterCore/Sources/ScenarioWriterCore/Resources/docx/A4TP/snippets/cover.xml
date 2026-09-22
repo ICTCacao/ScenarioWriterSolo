@@ -1,0 +1,17 @@
+<w:p w:rsidR="00E74177" w:rsidRPr="00557545" w:rsidRDefault="00E74177" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1200"/></w:pPr></w:p>
+<w:p w:rsidR="00557545" w:rsidRPr="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1200"/></w:pPr></w:p>
+<w:p w:rsidR="00557545" w:rsidRPr="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1200"/></w:pPr></w:p>
+<w:p w:rsidR="00557545" w:rsidRPr="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1200"/></w:pPr></w:p>
+
+<w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1200"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{TITLE}}</w:t>
+</w:r></w:p><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a6"/><w:ind w:left="1920"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{SUBTITLE}}</w:t>
+</w:r></w:p><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"/><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"/><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"/><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"/><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="00557545"><w:pPr><w:pStyle w:val="a8"/><w:ind w:left="6000"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>作者名：{{WRITER_NAME}}</w:t>
+</w:r></w:p><w:p w:rsidR="00557545" w:rsidRDefault="00557545" w:rsidP="004776DD"><w:pPr><w:pStyle w:val="a8"/><w:ind w:left="6000"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{WRITER_ID}}</w:t>
+</w:r>
+</w:p>
+
+<w:p w:rsidR="00EE6B81" w:rsidRDefault="00557545"><w:pPr><w:widowControl/><w:sectPr w:rsidR="00EE6B81" w:rsidSect="004776DD"><w:footerReference w:type="default" r:id="rId9"/><w:pgSz w:w="11906" w:h="16838" w:code="9"/><w:pgMar w:top="1440" w:right="1080" w:bottom="1440" w:left="1080" w:header="851" w:footer="992" w:gutter="0"/><w:cols w:space="425"/><w:textDirection w:val="tbRl"/><w:docGrid w:type="lines" w:linePitch="360"/></w:sectPr></w:pPr><w:r><w:br w:type="page"/></w:r></w:p>

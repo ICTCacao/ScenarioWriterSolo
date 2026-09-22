@@ -1,0 +1,8 @@
+					
+					<!-- 本体 特殊記号 -->
+					<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3">
+						<w:pPr><w:pStyle w:val="a4"/></w:pPr>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<w:t>{{MARK}}</w:t>
+						</w:r>
+					</w:p>

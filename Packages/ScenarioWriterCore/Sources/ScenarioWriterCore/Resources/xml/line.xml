@@ -1,0 +1,15 @@
+					
+					<!-- 本体 台詞等 -->
+					<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3">
+						<w:pPr><w:pStyle w:val="a5"/></w:pPr>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- 登場人物名 -->
+							<w:t>{{CHARACTER_DIV}}</w:t>
+						</w:r>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- tab -->
+							<w:tab/>
+							<!-- 台詞等 -->
+							<w:t>{{LINE}}</w:t>
+						</w:r>
+					</w:p>

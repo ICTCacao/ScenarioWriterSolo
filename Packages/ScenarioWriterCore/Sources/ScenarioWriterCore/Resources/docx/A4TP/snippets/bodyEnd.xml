@@ -1,0 +1,17 @@
+<w:p w:rsidR="002034B8" w:rsidRPr="002034B8" w:rsidRDefault="002034B8" w:rsidP="00F33DCA"><w:pPr><w:pStyle w:val="af0"/><w:spacing w:after="360"/><w:ind w:left="5680" w:right="360" w:hanging="2800"/></w:pPr></w:p>
+
+<w:sectPr w:rsidR="002034B8" w:rsidRPr="002034B8" w:rsidSect="00F33DCA">
+<w:footerReference w:type="default" r:id="rId11"/>
+<w:type w:val="nextPage"/>
+<w:pgSz w:w="11906" w:h="16838" w:code="9"/>
+<w:pgMar w:top="1440" w:right="1080" w:bottom="1440" w:left="1080" w:header="851" w:footer="992" w:gutter="0"/>
+<w:pgBorders>
+<w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+</w:pgBorders>
+<w:pgNumType w:start="1"/>
+<w:cols w:space="425"/>
+<w:textDirection w:val="tbRl"/>
+<w:docGrid w:type="lines" w:linePitch="360"/>
+</w:sectPr>
+</w:body>
+</w:document>

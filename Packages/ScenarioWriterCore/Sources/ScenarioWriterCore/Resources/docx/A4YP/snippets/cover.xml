@@ -1,0 +1,55 @@
+
+<w:p w:rsidR="005A7C98" w:rsidRDefault="006029D1" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="af1"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="00A31CE1" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="a8"/><w:rPr><w:lang w:eastAsia="ja-JP"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/><w:lang w:eastAsia="ja-JP"/></w:rPr>
+<w:t>{{TITLE}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="005A7C98" w:rsidRDefault="00A31CE1" w:rsidP="00A31CE1"><w:pPr><w:pStyle w:val="a8"/><w:rPr><w:lang w:eastAsia="ja-JP"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/><w:lang w:eastAsia="ja-JP"/></w:rPr>
+<w:t>{{SUBTITLE}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00A31CE1" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00E820B7" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00E820B7" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ad"/></w:pPr><w:r w:rsidRPr="00E820B7"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{DATE}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00E820B7" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ad"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{VERSION}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="11"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ab"/></w:pPr><w:r w:rsidRPr="00E820B7"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>作者名：{{WRITER_NAME}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ab"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{WRITER_ID}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ab"/><w:jc w:val="left"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ab"/><w:jc w:val="left"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00E820B7" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ab"/><w:jc w:val="left"/></w:pPr></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ac"/></w:pPr><w:r w:rsidRPr="00E820B7"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{ADDRESS}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ac"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{PHONE}}</w:t></w:r></w:p>
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="ac"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{EMAIL}}</w:t></w:r></w:p>

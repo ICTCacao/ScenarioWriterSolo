@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScenarioWriterSolo（Windows 版）</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <header class="toolbar">
+      <button id="btnNew" title="新しい作品（Ctrl+N）">新規</button>
+      <button id="btnOpen" title="作品ファイルを開く（Ctrl+O）">開く…</button>
+      <button id="btnSave" title="保存（Ctrl+S）">保存</button>
+      <button id="btnSaveAs" title="別名で保存（Ctrl+Shift+S）">別名で保存…</button>
+      <span class="sep"></span>
+      <button id="btnVertical" class="toggle" title="編集の書き方向（Ctrl+Alt+T）">縦書き</button>
+      <label class="fs">文字 <input id="fontSize" type="range" min="12" max="28" step="1" value="16" /></label>
+      <span class="sep"></span>
+      <span id="docTitle" class="doc-title">作品を開いていません</span>
+      <span id="status" class="status"></span>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <nav class="sections">
+          <button data-section="script" class="on">シナリオ編集</button>
+          <button data-section="scenes">場面</button>
+          <button data-section="cast">登場人物</button>
+          <button data-section="synopsis">シノプシス</button>
+          <button data-section="info">シナリオ情報</button>
+          <button data-section="read">読む</button>
+        </nav>
+        <h3>台本（場面ごと）</h3>
+        <ul id="sceneList" class="list"></ul>
+        <button id="btnAddScene" class="small">＋ 場面を追加</button>
+        <h3>登場人物</h3>
+        <ul id="castList" class="list"></ul>
+        <button id="btnAddCast" class="small">＋ 登場人物を追加</button>
+      </aside>
+      <main id="main">
+        <div id="empty" class="empty">
+          <h1>ScenarioWriterSolo（Windows 版）</h1>
+          <p>舞台・映像の脚本を書くためのエディタです。作品は 1 つずつ「タイトル.scwd」というファイルに保存されます（Mac 版と同じ形式）。</p>
+          <p><button id="btnOpen2">作品ファイルを開く…</button> <button id="btnNew2">新しい作品を作る</button></p>
+          <ul id="recentList" class="recent"></ul>
+        </div>
+        <section id="secScript" class="section" hidden>
+          <div class="scenebar">
+            <button id="btnPrevScene" title="前の場面（Ctrl+[）">‹</button>
+            <select id="sceneSelect"></select>
+            <button id="btnNextScene" title="次の場面（Ctrl+]）">›</button>
+            <span id="sceneDesc" class="scene-desc"></span>
+            <span id="lineCount" class="muted"></span>
+            <button id="btnAddLine" title="末尾に行を追加（行の中では Ctrl+Enter）">＋ 行を追加</button>
+          </div>
+          <div id="lines" class="lines"></div>
+        </section>
+        <section id="secScenes" class="section form" hidden></section>
+        <section id="secCast" class="section form" hidden></section>
+        <section id="secSynopsis" class="section" hidden>
+          <p class="muted">あらすじ・梗概。「読む」画面の冒頭に入ります。</p>
+          <textarea id="synopsis" class="synopsis"></textarea>
+        </section>
+        <section id="secInfo" class="section form" hidden></section>
+        <section id="secRead" class="section read" hidden>
+          <iframe id="reader" title="読む"></iframe>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

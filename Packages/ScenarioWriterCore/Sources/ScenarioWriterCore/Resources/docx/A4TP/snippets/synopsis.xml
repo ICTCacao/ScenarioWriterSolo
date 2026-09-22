@@ -1,0 +1,13 @@
+<w:p w:rsidR="0032706E" w:rsidRPr="00D170D4" w:rsidRDefault="0032706E" w:rsidP="004776DD">
+<w:pPr><w:pStyle w:val="ad"/></w:pPr><w:r w:rsidRPr="00D170D4"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:lastRenderedPageBreak/>
+<w:t>「{{TITLE}}」・シノプシス</w:t>
+</w:r>
+</w:p>
+<w:p w:rsidR="00FF499A" w:rsidRDefault="0032706E" w:rsidP="00F33DCA">
+<w:pPr><w:pStyle w:val="ac"/><w:ind w:left="2880" w:right="360" w:firstLineChars="100" w:firstLine="280"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{SYNOPSIS}}</w:t>
+</w:r>
+</w:p>
+
+<w:p w:rsidR="00DF4938" w:rsidRDefault="00DF4938" w:rsidP="00F33DCA"><w:pPr><w:pStyle w:val="ac"/><w:ind w:left="2880" w:right="360"/></w:pPr></w:p>
+<w:p w:rsidR="00150A82" w:rsidRDefault="00150A82" w:rsidP="00D170D4"><w:pPr><w:pStyle w:val="a"/><w:spacing w:before="360" w:after="360"/><w:ind w:left="1200" w:firstLine="1080"/><w:sectPr w:rsidR="00150A82" w:rsidSect="004776DD"><w:type w:val="continuous"/><w:pgSz w:w="11906" w:h="16838" w:code="9"/><w:pgMar w:top="1440" w:right="1080" w:bottom="1440" w:left="1080" w:header="851" w:footer="992" w:gutter="0"/><w:cols w:space="425"/><w:textDirection w:val="tbRl"/><w:docGrid w:type="lines" w:linePitch="360"/></w:sectPr></w:pPr></w:p>

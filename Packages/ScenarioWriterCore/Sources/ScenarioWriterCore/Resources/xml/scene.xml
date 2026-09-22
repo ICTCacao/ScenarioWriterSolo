@@ -1,0 +1,16 @@
+					
+					<!-- 場面 -->
+					<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3">
+						<w:pPr><w:pStyle w:val="a"/><w:ind w:left="1136" w:hanging="1136"/></w:pPr>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- 場面柱 -->
+							<w:t>{{SCENE_NAME}}</w:t>
+						</w:r>
+					</w:p>
+					<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="003C6414">
+						<w:pPr><w:pStyle w:val="a4"/><w:ind w:left="1138" w:firstLineChars="100" w:firstLine="200"/></w:pPr>
+						<w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+							<!-- 場面説明 -->
+							<w:t>{{SCENE_DESC}}</w:t>
+						</w:r>
+					</w:p>

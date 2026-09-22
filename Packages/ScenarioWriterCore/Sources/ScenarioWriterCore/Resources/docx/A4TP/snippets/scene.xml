@@ -1,0 +1,8 @@
+<w:p w:rsidR="00FE5970" w:rsidRPr="00010D08" w:rsidRDefault="00010D08" w:rsidP="00D170D4"><w:pPr><w:pStyle w:val="a"/><w:spacing w:before="360" w:after="360"/><w:ind w:left="1200" w:firstLine="1080"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:lastRenderedPageBreak/>
+<w:t xml:space="preserve">{{SCENE_NAME}}</w:t>
+</w:r><w:r w:rsidR="00FE5970"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t></w:t></w:r></w:p>
+<w:p w:rsidR="004E2778" w:rsidRDefault="00FE5970" w:rsidP="00F33DCA"><w:pPr><w:pStyle w:val="af4"/><w:spacing w:after="540"/><w:ind w:left="2880" w:right="360" w:firstLine="280"/></w:pPr><w:r w:rsidRPr="004E2778"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:t>{{SCENE_DESC}}</w:t></w:r></w:p>
+
+<w:p w:rsidR="004E2778" w:rsidRDefault="004E2778" w:rsidP="00F33DCA"><w:pPr><w:pStyle w:val="af0"/><w:spacing w:after="360"/><w:ind w:left="5680" w:right="360" w:hanging="2800"/></w:pPr></w:p>

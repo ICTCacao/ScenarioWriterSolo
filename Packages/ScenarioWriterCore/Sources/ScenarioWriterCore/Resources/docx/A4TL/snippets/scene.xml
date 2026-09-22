@@ -1,0 +1,10 @@
+<w:p w:rsidR="004E2EB3" w:rsidRDefault="004E2EB3" w:rsidP="004E2EB3"><w:pPr><w:pStyle w:val="a"/><w:ind w:left="602" w:hanging="602"/></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr>
+<w:lastRenderedPageBreak/>
+<w:t>{{SCENE_NAME}}</w:t>
+</w:r>
+</w:p>
+
+<w:p w:rsidR="004E2EB3" w:rsidRPr="00BE2EAB" w:rsidRDefault="004E2EB3" w:rsidP="00BE2EAB"><w:pPr><w:pStyle w:val="a4"/></w:pPr><w:r w:rsidRPr="00BE2EAB"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t xml:space="preserve">　</w:t></w:r><w:r w:rsidRPr="00BE2EAB"><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:tab/>
+<w:t>{{SCENE_DESC}}</w:t>
+</w:r>
+</w:p>
