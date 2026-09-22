@@ -14,6 +14,10 @@ PHP も Web サーバもログインも要りません。アプリを開けば�
 
 ![台本編集](docs/img/script.png)
 
+## マニュアル
+
+[docs/MANUAL.md](docs/MANUAL.md)（PDF: `docs/ScenarioWriterSolo-マニュアル.pdf`。DMG と `dist/` にも入っています）。Windows 版は [ScenarioWriterWin/docs/MANUAL.md](ScenarioWriterWin/docs/MANUAL.md)。
+
 ## 見本の作品
 
 `samples/sample.scwd`（架空の短い作品「夕暮れの谷」。セリフ・ト書・ナレーション・モノローグ・歌詞・テロップ・音響/照明指示・F.I/F.O を一通り使っています）。DMG と Windows 版の zip にも `sample.scwd` として入っているので、最初に開いて画面や Word 出力を試せます。

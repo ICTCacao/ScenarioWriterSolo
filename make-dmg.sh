@@ -22,6 +22,8 @@ cp -R "$bundle" "$staging/"
 ln -s /Applications "$staging/Applications"
 # 見本の作品（架空の短い戯曲）も同梱する
 [[ -f samples/sample.scwd ]] && cp samples/sample.scwd "$staging/sample.scwd"
+# マニュアル（PDF）も同梱する
+[[ -f "docs/$app-マニュアル.pdf" ]] && cp "docs/$app-マニュアル.pdf" "$staging/$app-マニュアル.pdf"
 mkdir "$staging/.background"
 cp "$BG_PNG" "$staging/.background/background.png"
 
@@ -51,7 +53,10 @@ tell application "Finder"
     set position of item "$app.app" of container window to {150, 190}
     set position of item "Applications" of container window to {450, 190}
     try
-      set position of item "sample.scwd" of container window to {300, 330}
+      set position of item "sample.scwd" of container window to {200, 330}
+    end try
+    try
+      set position of item "$app-マニュアル.pdf" of container window to {400, 330}
     end try
     close
     open
