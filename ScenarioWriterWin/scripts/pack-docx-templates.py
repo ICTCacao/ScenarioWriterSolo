@@ -11,7 +11,7 @@ for tpl in sorted(os.listdir(root)):
     tdir = os.path.join(d, "template")
     for dp, _, files in os.walk(tdir):
         for f in files:
-            if f.startswith("."): continue
+            if f == ".DS_Store": continue   # .rels は必要（ドット始まりでも飛ばさない）
             p = os.path.join(dp, f)
             rel = os.path.relpath(p, tdir).replace(os.sep, "/")
             entry["template"][rel] = open(p, encoding="utf-8").read()
