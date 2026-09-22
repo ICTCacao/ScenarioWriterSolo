@@ -133,3 +133,16 @@ button.icon:hover { color: var(--text); background: var(--sel); }
 .styles-table tr.fixed td { background: #f7f5f0; }
 .styles-table .lock { color: var(--muted); font-size: 11px; margin-left: 4px; }
 .styles-actions { display: flex; gap: 8px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+
+/* ---- 書き出しダイアログ */
+.overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); display: flex; align-items: center; justify-content: center; z-index: 30; }
+.dialog { background: var(--bg); border-radius: 10px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); width: 560px; max-width: 95vw; max-height: 90vh; overflow: auto; padding: 16px 20px; }
+.dialog h2 { font-size: 15px; margin: 0 0 8px; }
+.dialog .desc { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+.dialog .frow { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.dialog .frow label { flex: 0 0 170px; color: var(--muted); }
+.dialog .frow input[type="text"], .dialog .frow input[type="date"] { flex: 1 1 auto; border: 1px solid #cfcac0; border-radius: 6px; padding: 4px 6px; background: #fff; }
+.dialog .seg { display: inline-flex; border: 1px solid #cfcac0; border-radius: 6px; overflow: hidden; }
+.dialog .seg button { border: 0; border-radius: 0; padding: 4px 10px; }
+.dialog .seg button + button { border-left: 1px solid #cfcac0; }
+.dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }

@@ -20,6 +20,14 @@ fn write_text_file(path: String, text: String) -> Result<(), String> {
     fs::rename(&tmp, &path).map_err(|e| format!("{}: {}", path, e))
 }
 
+/// バイナリ（Word など）を書く
+#[tauri::command]
+fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
+    let tmp = format!("{}.tmp", path);
+    fs::write(&tmp, &data).map_err(|e| format!("{}: {}", tmp, e))?;
+    fs::rename(&tmp, &path).map_err(|e| format!("{}: {}", path, e))
+}
+
 /// 起動時に渡された作品ファイル（Windows でダブルクリックしたとき・コマンドライン）
 #[tauri::command]
 fn startup_file() -> Option<String> {
@@ -31,7 +39,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![read_text_file, write_text_file, startup_file])
+        .invoke_handler(tauri::generate_handler![read_text_file, write_text_file, write_binary_file, startup_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

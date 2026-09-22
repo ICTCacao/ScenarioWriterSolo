@@ -15,9 +15,10 @@ Windows 向けの脚本エディタです。画面は HTML / CSS / TypeScript、
 - Windows 標準のメニューバー（ファイル / 編集 / 表示 / 設定 / ヘルプ）。ショートカットはメニュー側で受ける
 - スタイル（設定 › スタイル…、Ctrl+7）: 行の種別ごとの名前・並び順・サイズ・色・字下げ・省略文字・表示の仕方・前後の余白を表の中で直接編集。追加・削除・既定に戻す・サイズ一括設定。固定スタイル（シノプシス・場面説明・登場人物）も同じ表で（名前と削除は不可）。作品ファイルに保存され、次の新規作品にも引き継がれる
 - 読む（Mac 版と同じ HTML。縦書き / 横書き、文字サイズ、場面ジャンプ）
+- Word（.docx）の台本の書き出し（Ctrl+E）。Mac 版と同じ deerstudio の脚本テンプレート（A4縦 縦書き / A4縦 横書き / A4横 縦書き）。テンプレートは `scripts/pack-docx-templates.py` で Mac 版の資源から `src/docx-templates.json` に詰め直す
 - 最近使った作品
 
-まだ無いもの: テキスト / Word / HTML ファイルの書き出し、行の操作の「元に戻す」（本文の文字入力は textarea の Ctrl+Z が効く）、Web 版データの取り込み。
+まだ無いもの: テキスト / HTML ファイルの書き出し、行の操作の「元に戻す」（本文の文字入力は textarea の Ctrl+Z が効く）、Web 版データの取り込み。
 
 ## 開発
 
@@ -50,6 +51,7 @@ src/
 ├── main.ts     # 画面（ファイル操作・台本の編集・場面・登場人物・シノプシス・情報・読む）
 ├── model.ts    # 作品ファイルの型・読み書き・書式の規則（Mac 版の ScenarioFile / ScriptFormatter と同じ）
 ├── reader.ts   # 「読む」画面の HTML（Mac 版 HtmlExporter と同じ）
+├── docx.ts     # Word の台本（Mac 版 DocxExporter と同じ。テンプレートは docx-templates.json）
 └── styles.css
 src-tauri/
 ├── src/lib.rs  # ファイルの読み書きと、起動時に渡された作品ファイル

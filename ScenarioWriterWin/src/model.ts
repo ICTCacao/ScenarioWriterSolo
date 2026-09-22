@@ -188,11 +188,12 @@ export function kagikakko(text: string): string {
 }
 
 /** 半角の英数・カナを全角に（読む画面・テキスト出力の「日本語英数」） */
-export function toFullWidth(s: string): string {
+export function toFullWidth(s: string, asciiSymbols = false): string {
   let out = "";
   for (const ch of s) {
     const v = ch.codePointAt(0)!;
     if ((v >= 0x30 && v <= 0x39) || (v >= 0x41 && v <= 0x5a) || (v >= 0x61 && v <= 0x7a)) out += String.fromCodePoint(v + 0xfee0);
+    else if (asciiSymbols && v >= 0x21 && v <= 0x7e && v !== 0x22 && v !== 0x27 && v !== 0x5c && v !== 0x7e) out += String.fromCodePoint(v + 0xfee0);
     else if (v >= 0xff61 && v <= 0xff9f) out += ch.normalize("NFKC");
     else out += ch;
   }
@@ -202,4 +203,27 @@ export function toFullWidth(s: string): string {
 
 export function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** 和暦（令和・平成・昭和・大正・明治）。1 年は「元年」 */
+export function wareki(d: Date): string {
+  const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+  const ymd = y * 10000 + m * 100 + day;
+  let gengo = "明治", wy = y - 1867;
+  if (ymd >= 20190501) { gengo = "令和"; wy = y - 2018; }
+  else if (ymd >= 19890108) { gengo = "平成"; wy = y - 1988; }
+  else if (ymd >= 19261225) { gengo = "昭和"; wy = y - 1925; }
+  else if (ymd >= 19120730) { gengo = "大正"; wy = y - 1911; }
+  return `${gengo}${wy === 1 ? "元" : wy}年${m}月${day}日`;
+}
+
+/** 先頭から n 文字に揃える（足りなければ全角空白を前に足し、多ければ末尾 n 文字） */
+export function padLeft(s: string, n: number): string {
+  const chars = Array.from(s);
+  if (chars.length >= n) return chars.slice(chars.length - n).join("");
+  return "　".repeat(n - chars.length) + s;
+}
+
+export function xmlEscape(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }

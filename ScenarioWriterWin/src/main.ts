@@ -5,6 +5,7 @@ import { open as openDialog, save as saveDialog, ask, message } from "@tauri-app
 import { Menu, Submenu, MenuItem, CheckMenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
 import * as M from "./model";
 import { buildReaderHtml } from "./reader";
+import { makeDocx, TEMPLATE_LABELS, type Template, type CoverInfo } from "./docx";
 
 type Section = "script" | "scenes" | "cast" | "synopsis" | "info" | "read" | "styles";
 
@@ -634,6 +635,72 @@ function renderReader() {
   iframe.srcdoc = buildReaderHtml(f, { vertical: state.vertical, fontSize: state.fontSize, showBar: true });
 }
 
+// ---- Word（.docx）で書き出す
+
+function exportDialog() {
+  const f = state.file;
+  if (!f) return;
+  document.querySelectorAll(".overlay").forEach((x) => x.remove());
+  let saved: any = {};
+  try { saved = JSON.parse(localStorage.getItem("sw_export") || "{}"); } catch {}
+  let template: Template = (saved.template as Template) || "A4TP";
+  const overlay = document.createElement("div"); overlay.className = "overlay";
+  const dlg = document.createElement("div"); dlg.className = "dialog";
+  dlg.innerHTML = `<h2>「${M.escapeHtml(f.scenario.title || "無題")}」を Word の台本にします</h2>
+    <p class="desc">株式会社 deerstudio 配布の脚本テンプレートを使った Word ファイル（.docx）。表紙に下の情報が入ります。Word 2007 以降で開けます。Mac 版と同じ出力です。</p>`;
+  const row = (label: string, el: HTMLElement) => { const r = document.createElement("div"); r.className = "frow"; const l = document.createElement("label"); l.textContent = label; r.append(l, el); dlg.appendChild(r); return r; };
+  const seg = document.createElement("div"); seg.className = "seg";
+  const segButtons: HTMLButtonElement[] = [];
+  for (const [id, label] of TEMPLATE_LABELS) {
+    const b = document.createElement("button"); b.textContent = label; b.classList.toggle("on", id === template);
+    b.onclick = () => { template = id; segButtons.forEach((x) => x.classList.toggle("on", x === b)); };
+    segButtons.push(b); seg.appendChild(b);
+  }
+  row("用紙・書き方", seg);
+  const text = (v: string, ph = "") => { const i = document.createElement("input"); i.type = "text"; i.value = v; i.placeholder = ph; return i; };
+  const writer = text(saved.writerName || f.scenario.writer);
+  const writerId = text(saved.writerId || "");
+  const version = text(saved.version || "", "例: 第 1 稿");
+  const dateWrap = document.createElement("div"); dateWrap.style.display = "flex"; dateWrap.style.alignItems = "center"; dateWrap.style.gap = "8px"; dateWrap.style.flex = "1 1 auto";
+  const useDate = document.createElement("input"); useDate.type = "checkbox"; useDate.checked = saved.useDate !== false;
+  const date = document.createElement("input"); date.type = "date";
+  const today = new Date(); date.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const wareki = document.createElement("span"); wareki.className = "muted";
+  const updWareki = () => { const d = date.valueAsDate; wareki.textContent = useDate.checked && d ? M.wareki(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) : ""; };
+  date.oninput = updWareki; useDate.onchange = updWareki; updWareki();
+  dateWrap.append(useDate, date, wareki);
+  const address = text(saved.address || "");
+  const phone = text(saved.phone || "");
+  const email = text(saved.email || "");
+  row("作者名", writer); row("脚本協会登録番号など", writerId); row("草稿バージョンなど", version); row("日付", dateWrap);
+  row("住所", address); row("電話番号", phone); row("電子メール", email);
+  const actions = document.createElement("div"); actions.className = "actions";
+  const cancel = document.createElement("button"); cancel.textContent = "閉じる"; cancel.onclick = () => overlay.remove();
+  const ok = document.createElement("button"); ok.textContent = "Word を保存…"; ok.className = "on";
+  ok.onclick = async () => {
+    const d = date.valueAsDate;
+    const cover: CoverInfo = {
+      writerName: writer.value, writerId: writerId.value, version: version.value,
+      date: useDate.checked && d ? new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) : null,
+      address: address.value, phone: phone.value, email: email.value,
+    };
+    localStorage.setItem("sw_export", JSON.stringify({ template, writerName: writer.value, writerId: writerId.value, version: version.value, useDate: useDate.checked, address: address.value, phone: phone.value, email: email.value }));
+    const path = await saveDialog({ filters: [{ name: "Word 文書", extensions: ["docx"] }], defaultPath: (f.scenario.title || "無題") + ".docx", title: "Word の台本を保存" });
+    if (!path) return;
+    try {
+      const bytes = makeDocx(f, template, cover, writer.value || f.scenario.writer);
+      await invoke("write_binary_file", { path, data: Array.from(bytes) });
+      overlay.remove();
+      setStatus("Word を書き出しました");
+    } catch (e: any) {
+      await message(`書き出せませんでした: ${e?.message ?? e}`, { title: "書き出せません", kind: "error" });
+    }
+  };
+  actions.append(cancel, ok); dlg.appendChild(actions);
+  overlay.appendChild(dlg); document.body.appendChild(overlay);
+  overlay.onclick = (ev) => { if (ev.target === overlay) overlay.remove(); };
+}
+
 // ---- 全体の操作
 
 let verticalMenuItem: CheckMenuItem | null = null;
@@ -690,6 +757,8 @@ async function setupMenu() {
     await sep(),
     await item("保存", save, "CmdOrCtrl+S"),
     await item("別名で保存…", saveAs, "CmdOrCtrl+Shift+S"),
+    await sep(),
+    await item("Word の台本を書き出す…", exportDialog, "CmdOrCtrl+E"),
     await sep(),
     await item("作品を閉じる", closeFile, "CmdOrCtrl+W"),
     ...(isMac ? [] : [await sep(), await PredefinedMenuItem.new({ item: "Quit", text: "終了" })]),
@@ -771,6 +840,7 @@ function setup() {
       if (k === "s") { ev.preventDefault(); if (ev.shiftKey) saveAs(); else save(); }
       else if (k === "o") { ev.preventDefault(); openFile(); }
       else if (k === "n") { ev.preventDefault(); newFile(); }
+      else if (k === "e") { ev.preventDefault(); exportDialog(); }
       else if (k === "t" && ev.altKey) { ev.preventDefault(); setVertical(!state.vertical); }
       else if (k === "[" && state.file) { ev.preventDefault(); $("btnPrevScene").click(); }
       else if (k === "]" && state.file) { ev.preventDefault(); $("btnNextScene").click(); }
