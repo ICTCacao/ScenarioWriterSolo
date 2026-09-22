@@ -12,11 +12,11 @@ figure { margin: 10px 0; page-break-inside: avoid; }
 img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
 li { margin: 2px 0; }
 </style></head><body><h1>ScenarioWriterSolo（Windows 版）マニュアル</h1>
-<p>版 0.5　2026 年 9 月</p>
+<p>β5　2026 年 9 月</p>
 <p>ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。この Windows 版は、Mac 版 ScenarioWriterSolo と同じ作品ファイル（<code>タイトル.scwd</code>）を読み書きします。縦書きでの編集が目玉です。</p>
 <h2>1. インストール</h2>
-<ol><li><code>ScenarioWriterWin_0.5.0_x64-setup.exe</code> をダブルクリックします。</li><li>「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。</li><li>画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、<code>.scwd</code> ファイルがこのアプリに関連付けられます。</li></ol>
-<p>インストールせずに使うときは <code>ScenarioWriterWin-0.5.0-x64-portable.exe</code> をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 <code>.scwd</code> の関連付けはされません）。</p>
+<ol><li><code>ScenarioWriterWin-β5-setup.exe</code> をダブルクリックします。</li><li>「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。</li><li>画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、<code>.scwd</code> ファイルがこのアプリに関連付けられます。</li></ol>
+<p>インストールせずに使うときは <code>ScenarioWriterWin-β5-portable.exe</code> をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 <code>.scwd</code> の関連付けはされません）。</p>
 <p>アンインストールは「設定 › アプリ」から。作品ファイルは消えません。</p>
 <h2>2. 作品ファイル</h2>
 <ul><li>作品は 1 つずつ <code>タイトル.scwd</code> というファイルです。中身は文字（JSON）なので、Mac 版と相互に持ち運べます。</li><li><b>Mac 版で β5 より前に作った <code>.scwd</code> は開けません</b>。Mac 版で開いて保存するか、「ファイル › 旧形式（SQLite）の作品ファイルをまとめて変換…」で新しい形式にしてから持ってきてください。</li><li>ふつうの書類アプリと同じで、編集した内容は <b>Ctrl+S で保存</b> します。未保存の変更があると、題名の横に「未保存の変更あり」と出ます。閉じるときに保存するか聞きます。</li><li>「ファイル › 最近使った作品」の代わりに、作品を開いていないときの画面に最近開いたファイルが並びます。</li></ul>

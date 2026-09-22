@@ -16,7 +16,7 @@ PHP も Web サーバもログインも要りません。アプリを開けば�
 
 ## Windows 版
 
-同じ作品ファイルを読み書きする Windows 版（Tauri）が [ScenarioWriterWin/](ScenarioWriterWin/) にあります。配布物は `dist/ScenarioWriterWin-<版>-windows.zip`（インストーラ・単体 exe・[マニュアル](ScenarioWriterWin/docs/MANUAL.md)）。
+同じ作品ファイルを読み書きする Windows 版（Tauri）が [ScenarioWriterWin/](ScenarioWriterWin/) にあります。配布物は `dist/ScenarioWriterWin-β5-windows.zip`（インストーラ・単体 exe・[マニュアル](ScenarioWriterWin/docs/MANUAL.md)）。版の呼び方は Mac 版と揃えて β5（インストーラの内部番号だけ 0.5.0）。
 
 ## 画面の流れ
 

@@ -33,7 +33,7 @@ function updateTitle() {
   const f = state.file;
   const name = f ? (f.scenario.title || "無題") : "作品を開いていません";
   $("docTitle").textContent = f ? `${name}${state.dirty ? " — 未保存の変更あり（Ctrl+S で保存）" : ""}` : name;
-  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版）`).catch(() => {});
+  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β5）`).catch(() => {});
 }
 
 function markDirty() { if (!state.dirty) { state.dirty = true; updateTitle(); } }
@@ -744,7 +744,7 @@ async function setupMenu() {
   const items: (Submenu | MenuItem | PredefinedMenuItem)[] = [];
   if (isMac) {
     items.push(await Submenu.new({ text: "ScenarioWriterWin", items: [
-      await PredefinedMenuItem.new({ item: { About: { name: "ScenarioWriterWin", version: "0.5.0" } }, text: "ScenarioWriterWin について" }),
+      await PredefinedMenuItem.new({ item: { About: { name: "ScenarioWriterWin", version: M.APP_VERSION } }, text: "ScenarioWriterWin について" }),
       await sep(),
       await PredefinedMenuItem.new({ item: "Hide", text: "隠す" }),
       await sep(),

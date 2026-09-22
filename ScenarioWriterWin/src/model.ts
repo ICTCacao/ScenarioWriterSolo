@@ -18,7 +18,8 @@ export interface ScwdFile {
 
 export const FORMAT = "scwd";
 export const VERSION = 1;
-export const APP_NAME = "ScenarioWriterWin 0.5";
+export const APP_NAME = "ScenarioWriterWin β5";
+export const APP_VERSION = "β5";   // 表示用。インストーラの内部番号（数字のみ）は src-tauri/tauri.conf.json の version
 
 export const CATEGORIES: [number, string][] = [
   [0, "---"], [1, "演劇"], [2, "ミュージカル"], [3, "高校演劇"], [4, "大衆演劇"], [5, "映画"],

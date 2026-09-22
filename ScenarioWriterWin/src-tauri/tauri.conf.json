@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "ScenarioWriterSolo（Windows 版）",
+        "title": "ScenarioWriterSolo（Windows 版 β5）",
         "width": 1280,
         "height": 820,
         "minWidth": 800,
