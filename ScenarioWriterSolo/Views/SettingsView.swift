@@ -14,7 +14,7 @@ struct SettingsView: View {
             DataSettingsView()
                 .tabItem { Label("データ", systemImage: "externaldrive") }
         }
-        .frame(width: 960, height: 560)
+        .frame(width: 1040, height: 580)
     }
 }
 
@@ -96,22 +96,82 @@ struct StyleRow: Identifiable {
     var line: LineStyle? = nil
     var text: TextStyle? = nil
     var isFixed: Bool { text != nil }
-    var orderText: String { line.map { "\($0.orderNo)" } ?? "—" }
-    var name: String { line?.name ?? text?.kind.label ?? "" }
-    var color: String { line?.color ?? text?.color ?? "#000000" }
-    var styleIdText: String { line.map { "\($0.styleId)" } ?? "—" }
-    var fontSize: Int { line?.fontSize ?? text?.fontSize ?? 12 }
-    var indent: Int { line?.indent ?? text?.indent ?? 0 }
-    var abbreviation: String { line?.abbreviation ?? "" }
-    var marginBefore: Int { line?.marginBefore ?? text?.marginBefore ?? 0 }
-    var marginAfter: Int { line?.marginAfter ?? text?.marginAfter ?? 0 }
-    var modeText: String { line.map { LineStyle.wordModeLabels[$0.wordMode] ?? "" } ?? "固定（削除できません）" }
+}
+
+/// 表の中で直接直す文字欄。打っている間は手元で持ち、少し待ってから保存する
+private struct InlineTextCell: View {
+    let value: String
+    var width: CGFloat? = nil
+    var placeholder = ""
+    let onChange: (String) -> Void
+    @State private var text = ""
+    @State private var task: Task<Void, Never>?
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .textFieldStyle(.roundedBorder)
+            .frame(width: width)
+            .onAppear { text = value }
+            .onChange(of: value) { _, v in if v != text { text = v } }
+            .onChange(of: text) { _, t in
+                guard t != value else { return }
+                task?.cancel()
+                task = Task { try? await Task.sleep(for: .milliseconds(600)); guard !Task.isCancelled else { return }; onChange(t) }
+            }
+            .onSubmit { task?.cancel(); if text != value { onChange(text) } }
+    }
+}
+
+/// 表の中で直接直す数値欄（範囲に収める）
+private struct InlineIntCell: View {
+    let value: Int
+    let range: ClosedRange<Int>
+    var width: CGFloat = 46
+    let onChange: (Int) -> Void
+    @State private var text = ""
+    @State private var task: Task<Void, Never>?
+    private func commit() {
+        task?.cancel()
+        let v = min(max(Int(text.trimmingCharacters(in: .whitespaces)) ?? value, range.lowerBound), range.upperBound)
+        text = String(v)
+        if v != value { onChange(v) }
+    }
+    var body: some View {
+        TextField("", text: $text)
+            .textFieldStyle(.roundedBorder)
+            .multilineTextAlignment(.trailing)
+            .frame(width: width)
+            .onAppear { text = String(value) }
+            .onChange(of: value) { _, v in if String(v) != text { text = String(v) } }
+            .onChange(of: text) { _, _ in
+                task?.cancel()
+                task = Task { try? await Task.sleep(for: .milliseconds(800)); guard !Task.isCancelled else { return }; commit() }
+            }
+            .onSubmit { commit() }
+    }
+}
+
+/// 表の中で直接直す色
+private struct InlineColorCell: View {
+    let hex: String
+    let onChange: (String) -> Void
+    @State private var color: Color = .black
+    @State private var task: Task<Void, Never>?
+    var body: some View {
+        ColorPicker("", selection: $color, supportsOpacity: false)
+            .labelsHidden()
+            .onAppear { color = Color(hex: hex) }
+            .onChange(of: hex) { _, h in color = Color(hex: h) }
+            .onChange(of: color) { _, c in
+                let h = NSColor(c).hexString
+                guard h.lowercased() != hex.lowercased() else { return }
+                task?.cancel()
+                task = Task { try? await Task.sleep(for: .milliseconds(400)); guard !Task.isCancelled else { return }; onChange(h) }
+            }
+    }
 }
 
 struct StylesSettingsView: View {
     @EnvironmentObject private var model: AppModel
-    @State private var editing: LineStyle?
-    @State private var editingText: TextStyle?
     @State private var confirmReset = false
     @State private var confirmDelete: LineStyle?
     @State private var showBulkSize = false
@@ -121,32 +181,75 @@ struct StylesSettingsView: View {
         model.styles.map { StyleRow(id: "L\($0.id)", line: $0) } + model.textStyles.map { StyleRow(id: "T\($0.kind.rawValue)", text: $0) }
     }
 
+    /// 行のスタイルを部分的に変えて保存する
+    private func update(_ s: LineStyle, _ change: (inout LineStyle) -> Void) {
+        var n = s; change(&n)
+        if n != s { model.updateStyle(n) }
+    }
+    private func update(_ t: TextStyle, _ change: (inout TextStyle) -> Void) {
+        var n = t; change(&n)
+        if n != t { model.updateTextStyle(n) }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Table(rows) {
-                TableColumn("順") { s in Text(s.orderText).monospacedDigit().foregroundStyle(.secondary) }.width(48)
-                TableColumn("スタイル名") { s in
-                    HStack {
-                        Circle().fill(Color(hex: s.color)).frame(width: 10, height: 10)
-                        Text(s.name)
-                        if s.isFixed { Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.tertiary) }
+                TableColumn("順") { r in
+                    if let s = r.line { InlineIntCell(value: s.orderNo, range: 0...100000, width: 60) { v in update(s) { $0.orderNo = v } } }
+                    else { Text("—").foregroundStyle(.tertiary) }
+                }.width(66)
+                TableColumn("スタイル名") { r in
+                    if let s = r.line {
+                        InlineTextCell(value: s.name, placeholder: "スタイル名") { v in
+                            let name = v.trimmingCharacters(in: .whitespaces)
+                            if !name.isEmpty { update(s) { $0.name = name } }
+                        }
+                    } else if let t = r.text {
+                        HStack { Text(t.kind.label); Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.tertiary) }
                     }
-                }.width(min: 150, ideal: 170)
-                TableColumn("番号") { s in Text(s.styleIdText).monospacedDigit().foregroundStyle(.secondary) }.width(40)
-                TableColumn("サイズ") { s in Text("\(s.fontSize)") }.width(44)
-                TableColumn("字下げ") { s in Text("\(s.indent)") }.width(44)
-                TableColumn("省略文字") { s in Text(s.abbreviation) }.width(64)
-                TableColumn("余白 前/後") { s in Text("\(s.marginBefore) / \(s.marginAfter)").monospacedDigit() }.width(70)
-                TableColumn("表示の仕方") { s in Text(s.modeText).font(.caption) }.width(min: 220, ideal: 250)
-                TableColumn("") { s in
-                    HStack(spacing: 10) {
-                        Button { if let l = s.line { editing = l } else { editingText = s.text } } label: { Image(systemName: "pencil") }.help("編集")
-                        if let l = s.line {
-                            Button(role: .destructive) { confirmDelete = l } label: { Image(systemName: "trash") }.help("削除")
+                }.width(min: 140, ideal: 160)
+                TableColumn("番号") { r in Text(r.line.map { "\($0.styleId)" } ?? "—").monospacedDigit().foregroundStyle(.secondary) }.width(40)
+                TableColumn("サイズ") { r in
+                    if let s = r.line { InlineIntCell(value: s.fontSize, range: 6...48) { v in update(s) { $0.fontSize = v } } }
+                    else if let t = r.text { InlineIntCell(value: t.fontSize, range: 6...48) { v in update(t) { $0.fontSize = v } } }
+                }.width(52)
+                TableColumn("色") { r in
+                    if let s = r.line { InlineColorCell(hex: s.color) { v in update(s) { $0.color = v } } }
+                    else if let t = r.text { InlineColorCell(hex: t.color) { v in update(t) { $0.color = v } } }
+                }.width(40)
+                TableColumn("字下げ") { r in
+                    if let s = r.line { InlineIntCell(value: s.indent, range: 0...20) { v in update(s) { $0.indent = v } } }
+                    else if let t = r.text { InlineIntCell(value: t.indent, range: 0...20) { v in update(t) { $0.indent = v } } }
+                }.width(52)
+                TableColumn("省略文字") { r in
+                    if let s = r.line { InlineTextCell(value: s.abbreviation, width: 64) { v in update(s) { $0.abbreviation = v } } }
+                }.width(72)
+                TableColumn("余白 前 / 後") { r in
+                    HStack(spacing: 4) {
+                        if let s = r.line {
+                            InlineIntCell(value: s.marginBefore, range: 0...4, width: 40) { v in update(s) { $0.marginBefore = v } }
+                            InlineIntCell(value: s.marginAfter, range: 0...4, width: 40) { v in update(s) { $0.marginAfter = v } }
+                        } else if let t = r.text {
+                            InlineIntCell(value: t.marginBefore, range: 0...4, width: 40) { v in update(t) { $0.marginBefore = v } }
+                            InlineIntCell(value: t.marginAfter, range: 0...4, width: 40) { v in update(t) { $0.marginAfter = v } }
                         }
                     }
-                    .buttonStyle(.borderless)
-                }.width(60)
+                }.width(92)
+                TableColumn("表示の仕方") { r in
+                    if let s = r.line {
+                        Picker("", selection: Binding(get: { s.wordMode }, set: { v in update(s) { $0.wordMode = v } })) {
+                            ForEach([1, 2, 3, 0], id: \.self) { m in Text(LineStyle.wordModeLabels[m] ?? "").tag(m) }
+                        }
+                        .labelsHidden()
+                    } else {
+                        Text("固定（削除できません）").font(.caption).foregroundStyle(.secondary)
+                    }
+                }.width(min: 220, ideal: 240)
+                TableColumn("") { r in
+                    if let s = r.line {
+                        Button(role: .destructive) { confirmDelete = s } label: { Image(systemName: "trash") }.help("削除").buttonStyle(.borderless)
+                    }
+                }.width(36)
             }
             Divider()
             HStack {
@@ -169,14 +272,14 @@ struct StylesSettingsView: View {
                         .frame(width: 320)
                     }
                 Spacer()
-                Text("行の「種別」ごとの見た目。台本画面の種別メニューにはこの並び順で出ます。🔒 は固定スタイル。").font(.caption).foregroundStyle(.secondary)
+                Text("表の中でそのまま直せます。台本画面の種別メニューには「順」の順に出ます。🔒 は固定スタイル。").font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button { editing = LineStyle(name: "新しいスタイル", fontSize: 12, color: "#000000", indent: 0, abbreviation: "", wordMode: 1) } label: { Label("USER STYLE 追加", systemImage: "plus") }
+                Button {
+                    model.addStyle(LineStyle(name: "新しいスタイル", fontSize: model.styles.first?.fontSize ?? 14, color: "#000000", indent: 0, abbreviation: "", wordMode: 1))
+                } label: { Label("USER STYLE 追加", systemImage: "plus") }
             }
             .padding(10)
         }
-        .sheet(item: $editing) { s in StyleEditSheet(style: s) }
-        .sheet(item: $editingText) { t in TextStyleEditSheet(style: t) }
         .confirmationDialog("スタイルを既定の \(ScenarioStore.defaultStyles.count) 種に戻しますか？", isPresented: $confirmReset, titleVisibility: .visible) {
             Button("既定に戻す", role: .destructive) { model.resetStyles() }
             Button("キャンセル", role: .cancel) {}
@@ -185,126 +288,6 @@ struct StylesSettingsView: View {
             Button("削除する", role: .destructive) { if let s = confirmDelete { model.deleteStyle(s) }; confirmDelete = nil }
             Button("キャンセル", role: .cancel) { confirmDelete = nil }
         } message: { Text("この種別を使っている台詞は「種別 \(confirmDelete?.styleId ?? 0)」として残り、既定の見え方になります。") }
-    }
-}
-
-struct StyleEditSheet: View {
-    @EnvironmentObject private var model: AppModel
-    @Environment(\.dismiss) private var dismiss
-    @State var style: LineStyle
-    @State private var color: Color = .black
-    @State private var showsName = true
-    @State private var kagi = true
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                TextField("スタイル名", text: $style.name)
-                Stepper("並び順: \(style.orderNo)", value: $style.orderNo, in: 0...100000, step: 100)
-                Stepper("フォントサイズ: \(style.fontSize)", value: $style.fontSize, in: 6...48)
-                ColorPicker("フォント色", selection: $color, supportsOpacity: false)
-                Stepper("字下げ数: \(style.indent)", value: $style.indent, in: 0...20)
-                TextField("省略文字（NA / M / SE …）", text: $style.abbreviation)
-                Toggle("登場人物名を出す", isOn: $showsName)
-                Toggle("台詞を「」で囲む", isOn: $kagi)
-                Section("前後の余白（行数）") {
-                    Stepper("前に空ける: \(style.marginBefore) 行", value: $style.marginBefore, in: 0...4)
-                    Stepper("後に空ける: \(style.marginAfter) 行", value: $style.marginAfter, in: 0...4)
-                    Text("「読む」画面（縦書きでは列の間隔）とテキスト・Word の出力に効きます。編集画面には出ません。")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                Section("見え方") {
-                    HStack(alignment: .top) {
-                        Text(ScriptFormatter.labelFor(name: showsName ? "太郎" : "", style: preview))
-                            .fontWeight(.semibold)
-                            .frame(width: 120, alignment: .leading)
-                        Color.clear.frame(width: CGFloat(style.indent) * 12, height: 1)
-                        Text(kagi ? "「おはよう」" : "おはよう")
-                            .foregroundStyle(color)
-                            .font(.system(size: 14 + CGFloat(style.fontSize - 12) * 0.5))
-                    }
-                }
-            }
-            .formStyle(.grouped)
-            Divider()
-            HStack {
-                Button("キャンセル") { dismiss() }.keyboardShortcut(.cancelAction)
-                Spacer()
-                Button(style.id == 0 ? "追加" : "保存") {
-                    style.color = NSColor(color).hexString
-                    style.wordMode = LineStyle.wordMode(showsName: showsName, kagikakko: kagi)
-                    if style.id == 0 { model.addStyle(style) } else { model.updateStyle(style) }
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(style.name.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            .padding()
-        }
-        .frame(width: 460, height: 480)
-        .onAppear {
-            color = Color(hex: style.color)
-            showsName = style.showsName
-            kagi = style.usesKagikakko
-        }
-    }
-
-    private var preview: ResolvedStyle {
-        ResolvedStyle(name: style.name, fontSize: style.fontSize, color: style.color, indent: style.indent, abbreviation: style.abbreviation, showsName: showsName, kagikakko: kagi)
-    }
-}
-
-/// 固定スタイル（シノプシス・場面説明・登場人物）の編集。名前と並び順は変えられず、削除もできない
-struct TextStyleEditSheet: View {
-    @EnvironmentObject private var model: AppModel
-    @Environment(\.dismiss) private var dismiss
-    @State var style: TextStyle
-    @State private var color: Color = .black
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                LabeledContent("スタイル") { Text(style.kind.label).fontWeight(.semibold) }
-                Stepper("フォントサイズ: \(style.fontSize)", value: $style.fontSize, in: 6...48)
-                ColorPicker("フォント色", selection: $color, supportsOpacity: false)
-                Stepper("字下げ数: \(style.indent)", value: $style.indent, in: 0...20)
-                Section("前後の余白（行数）") {
-                    Stepper("前に空ける: \(style.marginBefore) 行", value: $style.marginBefore, in: 0...4)
-                    Stepper("後に空ける: \(style.marginAfter) 行", value: $style.marginAfter, in: 0...4)
-                }
-                Section("見え方") {
-                    Text(sample)
-                        .foregroundStyle(color)
-                        .font(.system(size: 14 + CGFloat(style.fontSize - 12) * 0.5))
-                        .padding(.leading, CGFloat(style.indent) * 12)
-                    Text("フォントサイズと色は編集画面と「読む」画面に、字下げと余白は「読む」画面に効きます。")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            .formStyle(.grouped)
-            Divider()
-            HStack {
-                Button("キャンセル") { dismiss() }.keyboardShortcut(.cancelAction)
-                Spacer()
-                Button("保存") {
-                    style.color = NSColor(color).hexString
-                    model.updateTextStyle(style)
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-            }
-            .padding()
-        }
-        .frame(width: 460, height: 400)
-        .onAppear { color = Color(hex: style.color) }
-    }
-
-    private var sample: String {
-        switch style.kind {
-        case .synopsis: return "夕暮れの谷で、一匹の狼が問いかける。"
-        case .sceneDescription: return "夜。古い教会の礼拝堂。"
-        case .character: return "太郎　二十歳。少し内気な大学生。"
-        }
     }
 }
 
