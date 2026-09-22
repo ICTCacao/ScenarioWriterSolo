@@ -99,6 +99,9 @@ enum SelfTest {
     @MainActor
     static func finish(_ out: String, _ log: [String]) {
         try? log.joined(separator: "\n").write(toFile: out, atomically: true, encoding: .utf8)
-        NSApp.terminate(nil)
+        // 動作確認用の起動なので、確認ダイアログや終了処理を通さずにそのまま終わる
+        // （NSApp.terminate を非同期タスクの中から呼ぶと AppKit が落ちてクラッシュレポートが残る）
+        AppDelegate.model?.closeWork(discardChanges: true)
+        exit(0)
     }
 }

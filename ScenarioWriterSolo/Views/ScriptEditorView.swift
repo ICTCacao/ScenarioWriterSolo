@@ -193,6 +193,7 @@ struct LineRowView: View {
                          lineHeightMultiple: CGFloat(lineHeight),
                          kern: CGFloat(kern),
                          vertical: vertical,
+                         fixedWidth: vertical ? nil : EditorMetrics.bodyExtent(chars: model.setting.bodyLength, indent: style.indent, pointSize: pointSize, kern: CGFloat(kern)),
                          requestFocus: wantsFocus,
                          onFocusChange: { f in
                              focused = f
@@ -296,9 +297,8 @@ struct LineRowView: View {
                     if style.kagikakko {
                         Text("「").foregroundStyle(color.opacity(0.6)).padding(.top, 3)
                     }
-                    // 本文は「読む」と同じ文字数で折り返す
+                    // 本文は「読む」と同じ文字数で折り返す（幅は LineTextView の fixedWidth で固定）
                     textEditor
-                        .frame(maxWidth: EditorMetrics.bodyExtent(chars: model.setting.bodyLength, indent: style.indent, pointSize: pointSize, kern: CGFloat(kern)), alignment: .leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 

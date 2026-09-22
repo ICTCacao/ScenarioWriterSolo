@@ -12,6 +12,10 @@ struct LineTextView: NSViewRepresentable {
     var kern: CGFloat = 0
     /// 縦書きで編集（右から左へ行が並び、各行の中は上から下）
     var vertical: Bool = false
+    /// 横書きの欄の幅（本文の文字数ぶん）。指定があれば提案の幅に関係なくこの幅で答える。
+    /// 提案に合わせて幅を変えると、HStack / List が 462 と 328.5 のような 2 つの幅で交互に測り、
+    /// 幅ごとに高さが違うため枠が往復して固まる（2026-09-22 に本人環境で発生）
+    var fixedWidth: CGFloat? = nil
     /// true を渡すとフォーカスを取りに行く。取ったら onFocusRequestHandled で知らせる
     var requestFocus: Bool
     var onFocusChange: (Bool) -> Void
@@ -120,10 +124,12 @@ struct LineTextView: NSViewRepresentable {
             }
             return size
         }
-        var width = proposal.width ?? 0
+        var width = fixedWidth ?? (proposal.width ?? 0)
         if !width.isFinite || width <= 0 { width = v.bounds.width }
         guard width > 0 else { return nil }
-        return CGSize(width: width, height: v.height(forWidth: width))
+        let h = v.height(forWidth: width)
+        LineTextView.log("h sizeThatFits proposal=\(proposal.width.map { "\($0)" } ?? "nil")x\(proposal.height.map { "\($0)" } ?? "nil") -> \(width)x\(h) bounds=\(v.bounds.size) chars=\(v.string.count)")
+        return CGSize(width: width, height: h)
     }
 
     /// 起動引数 -logLayout <ファイル> で寸法計算を記録（動作確認用）
@@ -219,9 +225,12 @@ final class AutoHeightTextView: NSTextView {
         return max(ceil(used.height) + textContainerInset.width * 2 + 1, 24)
     }
 
+    /// 横書き: 幅を与えて必要な高さを返す。**整数に切り上げる**。フォントの行の高さは端数（例 30.4pt）になり、
+    /// そのまま返すと SwiftUI がピクセルに揃えた枠（30.5）と食い違い、setFrameSize → 再計測 → また 30.4 … と
+    /// 無限に往復して固まる（2026-09-22 に本人環境で発生。Web 版から取り込んだ作品を開くと固まった）
     func height(forWidth width: CGFloat) -> CGFloat {
         let used = measuredUsedRect(containerSize: NSSize(width: max(width - textContainerInset.width * 2, 10), height: CGFloat.greatestFiniteMagnitude))
-        return max(used.height + textContainerInset.height * 2, 24)
+        return max(ceil(used.height + textContainerInset.height * 2), 24)
     }
 
     override var intrinsicContentSize: NSSize {
@@ -233,6 +242,11 @@ final class AutoHeightTextView: NSTextView {
         let changed = newSize != frame.size
         super.setFrameSize(newSize)
         if changed {
+            LineTextView.log("setFrameSize \(newSize) vertical=\(isVerticalLayout) chars=\(string.count)")
+            if !isVerticalLayout {
+                // 横書き: 高さが本文に合っているなら再計測を頼まない（頼むと SwiftUI との往復が止まらないことがある）
+                if abs(height(forWidth: newSize.width) - newSize.height) < 1 { return }
+            }
             invalidateIntrinsicContentSize()
             if isVerticalLayout {
                 // 列の幅が本文の幅と違うなら（高さが後から決まったときなど）、次のランループで再計測を頼む
