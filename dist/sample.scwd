@@ -1,0 +1,473 @@
+{
+  "app": "ScenarioWriterSolo β5",
+  "characters": [
+    {
+      "chara": "二十歳。少し内気な大学生。祖父の言葉を信じている。",
+      "id": 1,
+      "name": "太郎"
+    },
+    {
+      "chara": "太郎の幼なじみ。はっきりものを言う。町の図書館で働く。",
+      "id": 2,
+      "name": "花子"
+    },
+    {
+      "chara": "年齢不詳。谷を探して歩いてきた。",
+      "id": 3,
+      "name": "旅人"
+    },
+    {
+      "chara": "太郎の祖父。舞台には出ない。",
+      "id": 4,
+      "name": "祖父の声"
+    }
+  ],
+  "format": "scwd",
+  "scenario": {
+    "category": 1,
+    "date": "2026-09-22 23:00:00",
+    "memo": "ScenarioWriterSolo の見本です。自由に書き換えてお使いください。",
+    "subtitle": "一幕三場の小品",
+    "title": "夕暮れの谷",
+    "writer": "見本 太郎"
+  },
+  "scenes": [
+    {
+      "description": "夜。谷の外れにある古い教会の礼拝堂。ろうそくの明かりだけ。",
+      "lines": [
+        {
+          "text": "ゆっくりと明かりが入る。",
+          "type": 10
+        },
+        {
+          "text": "礼拝堂の中央に、ろうそくの明かり。周囲は暗い。",
+          "type": 9
+        },
+        {
+          "text": "舞台中央に古い長椅子。太郎が一人、座っている。手に古びた手帳。",
+          "type": 2
+        },
+        {
+          "character": 4,
+          "text": "谷の町に、その夜はやってきた。",
+          "type": 4
+        },
+        {
+          "character": 1,
+          "text": "こんばんは。誰かいますか。",
+          "type": 1
+        },
+        {
+          "text": "遠くで鐘の音。",
+          "type": 8
+        },
+        {
+          "text": "花子、奥から出てくる。コートの襟を立てている。",
+          "type": 2
+        },
+        {
+          "character": 2,
+          "text": "……誰？　太郎くん？　こんな時間に何してるの。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "月を見に来たんだ。今夜は赤くなるって、じいちゃんが言ってた。",
+          "type": 1
+        },
+        {
+          "character": 2,
+          "text": "鐘なんて、もう何年も鳴ってないのに。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "あの音を、ぼくは知っている。子どものころ、じいちゃんと聞いた音だ。",
+          "type": 5
+        },
+        {
+          "text": "太郎、手帳を開いて、ページを指でなぞる。",
+          "type": 7
+        },
+        {
+          "character": 1,
+          "text": "ここに書いてある。「月が赤くなる夜、谷は答える」って。",
+          "type": 1
+        },
+        {
+          "character": 2,
+          "text": "それ、じいさんの冗談でしょ。",
+          "type": 1
+        },
+        {
+          "text": "扉のきしむ音。",
+          "type": 8
+        },
+        {
+          "text": "扉が開き、旅人が立っている。肩に大きな荷物。",
+          "type": 2
+        },
+        {
+          "character": 3,
+          "text": "失礼。道に迷ってしまって。ここは、どこの谷ですか。",
+          "type": 1
+        },
+        {
+          "character": 2,
+          "text": "夕暮れの谷。町の人はそう呼んでます。",
+          "type": 1
+        },
+        {
+          "character": 3,
+          "text": "夕暮れの谷……。やっと着いた。",
+          "type": 1
+        },
+        {
+          "text": "明かり、ゆっくり落ちる。",
+          "type": 11
+        }
+      ],
+      "minutes": 8,
+      "name": "一　礼拝堂",
+      "seconds": 0,
+      "valid": true
+    },
+    {
+      "description": "翌朝。谷を下る一本道。朝もやの中。",
+      "lines": [
+        {
+          "text": "朝の光。鳥の声。",
+          "type": 10
+        },
+        {
+          "text": "翌朝",
+          "type": 6
+        },
+        {
+          "text": "三人が並んで歩いている。旅人は荷物を花子に持たれている。",
+          "type": 2
+        },
+        {
+          "character": 2,
+          "text": "本当に、ひとりで来たの？",
+          "type": 1
+        },
+        {
+          "character": 3,
+          "text": "ええ。この谷を探して、三年になります。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "三年も？　何があるんですか、ここに。",
+          "type": 1
+        },
+        {
+          "character": 3,
+          "text": "それを確かめに来たんです。あなたのおじいさんと、同じように。",
+          "type": 1
+        },
+        {
+          "text": "太郎、立ち止まる。",
+          "type": 7
+        },
+        {
+          "character": 1,
+          "text": "じいちゃんを知ってるんですか。",
+          "type": 1
+        },
+        {
+          "text": "旅人、答えずに空を見上げる。",
+          "type": 2
+        },
+        {
+          "text": "風よ吹け　風よ巻け\n谷の底まで　運んでゆけ\n赤い月の　その夜に",
+          "type": 3
+        },
+        {
+          "character": 1,
+          "text": "……その歌。じいちゃんがよく歌ってた。",
+          "type": 1
+        },
+        {
+          "character": 3,
+          "text": "この谷で教わった歌です。ずっと昔に。",
+          "type": 1
+        },
+        {
+          "text": "光が白く飛んで、暗転。",
+          "type": 11
+        }
+      ],
+      "minutes": 6,
+      "name": "二　谷の道",
+      "seconds": 30,
+      "valid": true
+    },
+    {
+      "description": "その夜。礼拝堂。窓の外に、赤い月。",
+      "lines": [
+        {
+          "text": "窓から赤い光が差し込む。",
+          "type": 9
+        },
+        {
+          "text": "鐘の音。今度は近い。",
+          "type": 8
+        },
+        {
+          "text": "三人、窓の前に立っている。",
+          "type": 2
+        },
+        {
+          "character": 2,
+          "text": "赤い……。本当に赤くなった。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "じいちゃん、見てる？",
+          "type": 1
+        },
+        {
+          "character": 4,
+          "text": "谷は、答えなかった。ただ、鐘だけが鳴った。",
+          "type": 4
+        },
+        {
+          "character": 3,
+          "text": "答えは、はじめから、ここにあったんです。あなたが来た。それだけで。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "わかった気がする。じいちゃんが言いたかったこと。",
+          "type": 5
+        },
+        {
+          "character": 2,
+          "text": "帰ろう、太郎くん。明日も図書館、開けなきゃ。",
+          "type": 1
+        },
+        {
+          "character": 1,
+          "text": "うん。……旅人さんは？",
+          "type": 1
+        },
+        {
+          "character": 3,
+          "text": "もう少し、ここにいます。月が、白くなるまで。",
+          "type": 1
+        },
+        {
+          "text": "太郎と花子、扉へ。振り返って、旅人に小さく頭を下げる。",
+          "type": 7
+        },
+        {
+          "text": "鐘の音、遠ざかる。",
+          "type": 8
+        },
+        {
+          "text": "赤い光がゆっくりと白へ。暗転。",
+          "type": 11
+        },
+        {
+          "text": "幕",
+          "type": 6
+        }
+      ],
+      "minutes": 7,
+      "name": "三　再び礼拝堂",
+      "seconds": 0,
+      "valid": true
+    }
+  ],
+  "setting": {
+    "bodyLength": 32,
+    "characterLength": 8,
+    "kagikakko": true
+  },
+  "styles": [
+    {
+      "abbr": "",
+      "color": "#000000",
+      "id": 1,
+      "indent": 0,
+      "marginAfter": 0,
+      "marginBefore": 0,
+      "mode": 1,
+      "name": "セリフ",
+      "order": 100,
+      "size": 14
+    },
+    {
+      "abbr": "",
+      "color": "#006400",
+      "id": 2,
+      "indent": 3,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "ト書",
+      "order": 200,
+      "size": 14
+    },
+    {
+      "abbr": "Song",
+      "color": "#ff4500",
+      "id": 3,
+      "indent": 4,
+      "marginAfter": 2,
+      "marginBefore": 2,
+      "mode": 0,
+      "name": "歌詞",
+      "order": 300,
+      "size": 14
+    },
+    {
+      "abbr": "NA",
+      "color": "#000000",
+      "id": 4,
+      "indent": 0,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 1,
+      "name": "ナレーション",
+      "order": 400,
+      "size": 14
+    },
+    {
+      "abbr": "M",
+      "color": "#000000",
+      "id": 5,
+      "indent": 0,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 1,
+      "name": "モノローグ",
+      "order": 500,
+      "size": 14
+    },
+    {
+      "abbr": "T",
+      "color": "#ff4500",
+      "id": 6,
+      "indent": 4,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "テロップ",
+      "order": 600,
+      "size": 14
+    },
+    {
+      "abbr": "",
+      "color": "#8b0000",
+      "id": 7,
+      "indent": 4,
+      "marginAfter": 2,
+      "marginBefore": 2,
+      "mode": 0,
+      "name": "演技指示",
+      "order": 700,
+      "size": 14
+    },
+    {
+      "abbr": "SE",
+      "color": "#8b0000",
+      "id": 8,
+      "indent": 4,
+      "marginAfter": 2,
+      "marginBefore": 2,
+      "mode": 0,
+      "name": "音響指示",
+      "order": 800,
+      "size": 14
+    },
+    {
+      "abbr": "L",
+      "color": "#8b0000",
+      "id": 9,
+      "indent": 4,
+      "marginAfter": 2,
+      "marginBefore": 2,
+      "mode": 0,
+      "name": "照明指示",
+      "order": 900,
+      "size": 14
+    },
+    {
+      "abbr": "(F.I)",
+      "color": "#000000",
+      "id": 10,
+      "indent": 4,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "フェードイン",
+      "order": 1000,
+      "size": 14
+    },
+    {
+      "abbr": "(F.O)",
+      "color": "#000000",
+      "id": 11,
+      "indent": 4,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "フェードアウト",
+      "order": 1100,
+      "size": 14
+    },
+    {
+      "abbr": "(C.I)",
+      "color": "#000000",
+      "id": 12,
+      "indent": 4,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "カットイン",
+      "order": 1200,
+      "size": 14
+    },
+    {
+      "abbr": "(C.O)",
+      "color": "#000000",
+      "id": 13,
+      "indent": 4,
+      "marginAfter": 1,
+      "marginBefore": 1,
+      "mode": 0,
+      "name": "カットアウト",
+      "order": 1300,
+      "size": 14
+    }
+  ],
+  "synopsis": "谷あいの小さな町。大学生の太郎は、亡くなった祖父が残した「今夜、月が赤くなる」という言葉を確かめに、古い礼拝堂へ向かう。\n幼なじみの花子、そして道に迷った旅人。三人が夕暮れの谷で過ごす一夜の物語。",
+  "textStyles": {
+    "character": {
+      "color": "#000000",
+      "indent": 0,
+      "marginAfter": 0,
+      "marginBefore": 0,
+      "size": 14
+    },
+    "scene": {
+      "color": "#006400",
+      "indent": 0,
+      "marginAfter": 0,
+      "marginBefore": 0,
+      "size": 14
+    },
+    "synopsis": {
+      "color": "#000000",
+      "indent": 0,
+      "marginAfter": 0,
+      "marginBefore": 0,
+      "size": 14
+    }
+  },
+  "version": 1
+}

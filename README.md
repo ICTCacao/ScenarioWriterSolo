@@ -14,6 +14,10 @@ PHP も Web サーバもログインも要りません。アプリを開けば�
 
 ![台本編集](docs/img/script.png)
 
+## 見本の作品
+
+`samples/sample.scwd`（架空の短い作品「夕暮れの谷」。セリフ・ト書・ナレーション・モノローグ・歌詞・テロップ・音響/照明指示・F.I/F.O を一通り使っています）。DMG と Windows 版の zip にも `sample.scwd` として入っているので、最初に開いて画面や Word 出力を試せます。
+
 ## Windows 版
 
 同じ作品ファイルを読み書きする Windows 版（Tauri）が [ScenarioWriterWin/](ScenarioWriterWin/) にあります。配布物は `dist/ScenarioWriterWin-β5-windows.zip`（インストーラ・単体 exe・[マニュアル](ScenarioWriterWin/docs/MANUAL.md)）。版の呼び方は Mac 版と揃えて β5（インストーラの内部番号だけ 0.5.0）。

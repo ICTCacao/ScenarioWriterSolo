@@ -20,6 +20,8 @@ staging=$(mktemp -d)
 # 1. 中身を用意
 cp -R "$bundle" "$staging/"
 ln -s /Applications "$staging/Applications"
+# 見本の作品（架空の短い戯曲）も同梱する
+[[ -f samples/sample.scwd ]] && cp samples/sample.scwd "$staging/sample.scwd"
 mkdir "$staging/.background"
 cp "$BG_PNG" "$staging/.background/background.png"
 
@@ -40,7 +42,7 @@ tell application "Finder"
     set current view of container window to icon view
     set toolbar visible of container window to false
     set statusbar visible of container window to false
-    set the bounds of container window to {200, 120, 800, 520}
+    set the bounds of container window to {200, 120, 800, 560}
     set opts to the icon view options of container window
     set arrangement of opts to not arranged
     set icon size of opts to 112
@@ -48,6 +50,9 @@ tell application "Finder"
     set background picture of opts to file ".background:background.png"
     set position of item "$app.app" of container window to {150, 190}
     set position of item "Applications" of container window to {450, 190}
+    try
+      set position of item "sample.scwd" of container window to {300, 330}
+    end try
     close
     open
     update without registering applications

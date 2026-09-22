@@ -20,6 +20,10 @@ Windows 向けの脚本エディタです。画面は HTML / CSS / TypeScript、
 
 まだ無いもの: テキスト / HTML ファイルの書き出し、行の操作の「元に戻す」（本文の文字入力は textarea の Ctrl+Z が効く）、Web 版データの取り込み。
 
+## 見本の作品
+
+配布 zip の `sample.scwd`（リポジトリでは `../samples/sample.scwd`）は架空の短い作品「夕暮れの谷」で、種別を一通り使っています。最初に開いて試すのに使ってください。
+
 ## 開発
 
 必要なもの: Node 20 以上、Rust（`rustup`）。Windows では Visual Studio の C++ ビルドツールと WebView2（Windows 10/11 は標準）。
