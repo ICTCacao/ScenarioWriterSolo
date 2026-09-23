@@ -103,15 +103,16 @@ struct ScriptEditorView: View {
             }
             .listStyle(.inset)
             .onChange(of: model.focusRequestLineId) { _, id in
-                if let id { withAnimation { proxy.scrollTo(id, anchor: .center) } }
+                // 見えるところまでだけ動かす（anchor なし）。⌘⏎ で足した行で本文の位置が飛ばないように
+                if let id { withAnimation(.easeOut(duration: 0.15)) { proxy.scrollTo(id) } }
             }
         }
     }
 
     @ViewBuilder
     private func lineMenu(_ line: ScriptLine) -> some View {
-        Button("この下に行を追加") { model.insertLine(after: line.id) }
-        Button("この上に行を追加") { model.insertLine(before: line.id) }
+        Button(vertical ? "この左に行を追加" : "この下に行を追加") { model.insertLine(after: line.id) }
+        Button(vertical ? "この右に行を追加" : "この上に行を追加") { model.insertLine(before: line.id) }
         Divider()
         Button(vertical ? "前へ（右へ）" : "上へ") { model.moveLine(line.id, up: true) }
         Button(vertical ? "次へ（左へ）" : "下へ") { model.moveLine(line.id, up: false) }
@@ -197,7 +198,10 @@ struct LineRowView: View {
                          requestFocus: wantsFocus,
                          onFocusChange: { f in
                              focused = f
-                             if f { model.selectedLineId = line.id } else { flushSave() }
+                             if f {
+                                 model.selectedLineId = line.id
+                                 if model.headerEditLineId == line.id { model.headerEditLineId = nil }
+                             } else { flushSave() }
                          },
                          onFocusRequestHandled: { wantsFocus = false },
                          onCommandReturn: { shift in
@@ -240,31 +244,60 @@ struct LineRowView: View {
         return min(available, EditorMetrics.bodyExtent(chars: bodyLength, indent: indent, pointSize: pointSize, kern: kern))
     }
 
-    /// 縦書きの 1 列: 上に種別・人物、下に本文（上から下へ）。列は右から左へ並ぶ
+    /// 種別・人物の選択ボックスを開いているか（ふだんは人物名だけ。クリックで開く）
+    private var headerOpen: Bool { model.headerEditLineId == line.id }
+
+    private func openHeader() {
+        flushSave()
+        model.selectedLineId = line.id
+        model.headerEditLineId = line.id
+    }
+
+    /// 縦書きの 1 列: 上に人物名（縦書き。クリックで種別・人物の選択ボックス）、下に本文（上から下へ）。列は右から左へ並ぶ
     private var verticalBody: some View {
-        let headerW: CGFloat = 120 + 4 + 24   // 種別 + メニューボタン。列の最小幅にする
+        let headerW = headerOpen ? VerticalColumnsView.headerW : VerticalColumnsView.collapsedHeaderW
         return VStack(alignment: .trailing, spacing: 4) {
-            HStack(spacing: 4) {
-                typePicker.frame(width: 120)
-                Menu {
-                    Button("この左に行を追加") { model.insertLine(after: line.id) }
-                    Button("この右に行を追加") { model.insertLine(before: line.id) }
-                    Divider()
-                    Button("前へ（右へ）") { model.moveLine(line.id, up: true) }
-                    Button("次へ（左へ）") { model.moveLine(line.id, up: false) }
-                    Divider()
-                    Button("削除", role: .destructive) { model.deleteLine(line.id) }
-                } label: { Image(systemName: "ellipsis.circle") }
-                .menuStyle(.borderlessButton)
-                .frame(width: 24)
-                .opacity(hovering || model.selectedLineId == line.id ? 1 : 0.25)
+            if headerOpen {
+                VStack(alignment: .trailing, spacing: 4) {
+                    HStack(spacing: 4) {
+                        typePicker.frame(width: 120)
+                        Menu {
+                            Button("この左に行を追加") { model.insertLine(after: line.id) }
+                            Button("この右に行を追加") { model.insertLine(before: line.id) }
+                            Divider()
+                            Button("前へ（右へ）") { model.moveLine(line.id, up: true) }
+                            Button("次へ（左へ）") { model.moveLine(line.id, up: false) }
+                            Divider()
+                            Button("削除", role: .destructive) { model.deleteLine(line.id) }
+                        } label: { Image(systemName: "ellipsis.circle") }
+                        .menuStyle(.borderlessButton)
+                        .frame(width: 24)
+                    }
+                    HStack {
+                        Spacer(minLength: 0)
+                        if style.showsName { characterPicker.frame(width: 120) }
+                        else { Text(style.abbreviation).font(.caption).foregroundStyle(color).frame(height: 22) }
+                    }
+                }
+                .frame(height: VerticalColumnsView.headerH - 16, alignment: .top)
+            } else {
+                Button(action: openHeader) {
+                    Group {
+                        if style.showsName {
+                            VerticalLabel(text: headerLabel.text, height: VerticalColumnsView.headerH - 16)
+                                .foregroundStyle(headerLabel.color)
+                                .fontWeight(.semibold)
+                        } else {
+                            styleIcon
+                        }
+                    }
+                        .frame(width: VerticalColumnsView.collapsedHeaderW, height: VerticalColumnsView.headerH - 16, alignment: .top)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("クリックで種別（\(style.name)）・登場人物を変える")
             }
-            HStack {
-                Spacer(minLength: 0)
-                if style.showsName { characterPicker.frame(width: 120) }
-                else { Text(style.abbreviation).font(.caption).foregroundStyle(color).frame(height: 22) }
-            }
-            // 本文は列の右端から始める（縦書きの 1 行目は右）。列の幅は上の選択ボックス幅を最小にして、本文が長ければ左へ広がる
+            // 本文は列の右端から始める（縦書きの 1 行目は右）。列の幅は見出しの幅を最小にして、本文が長ければ左へ広がる
             textEditor
                 .frame(height: verticalTextHeight)
                 .frame(minWidth: headerW, alignment: .trailing)
@@ -278,14 +311,68 @@ struct LineRowView: View {
         )
     }
 
+    /// 閉じているときの見出し: 人物を出す種別は人物名、出さない種別（ト書など）は種別名
+    private var headerLabel: (text: String, color: Color) {
+        if style.showsName {
+            if let cid = line.characterId {
+                return (model.characterById[cid]?.name ?? "（削除された人物）", .primary)
+            }
+            return ("（人物なし）", .secondary)
+        }
+        return (style.name.isEmpty ? style.abbreviation : style.name, color)
+    }
+
+    /// 人物を出さない種別（ト書・歌詞など）の見出し: 種別の文字色のアイコン。種別名はユーザーが変えられるので名前から選ぶ
+    private var styleIcon: some View {
+        Image(systemName: Self.iconName(forStyle: style.name, abbreviation: style.abbreviation))
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(color)
+            .frame(width: 20, height: 20)
+    }
+
+    static func iconName(forStyle name: String, abbreviation: String) -> String {
+        let n = name + " " + abbreviation
+        func has(_ keys: String...) -> Bool { keys.contains { n.localizedCaseInsensitiveContains($0) } }
+        if has("ト書") { return "text.alignleft" }
+        if has("歌", "Song") { return "music.note" }
+        if has("テロップ", "字幕") { return "captions.bubble" }
+        if has("音響", "効果音", "SE", "音") { return "speaker.wave.2.fill" }
+        if has("照明", "明かり", "ライト") { return "lightbulb.fill" }
+        if has("演技", "動き") { return "figure.walk" }
+        return "circle.fill"
+    }
+
     private var horizontalBody: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
-                    typePicker
-                    if style.showsName { characterPicker }
-                    else if !style.abbreviation.isEmpty {
-                        Text(style.abbreviation).font(.caption).foregroundStyle(color).padding(.leading, 4)
+                    if headerOpen {
+                        typePicker
+                        if style.showsName { characterPicker }
+                        else if !style.abbreviation.isEmpty {
+                            Text(style.abbreviation).font(.caption).foregroundStyle(color).padding(.leading, 4)
+                        }
+                    } else {
+                        // ふだんは人物名（ト書などは種別名）だけ。クリックで種別・人物の選択ボックスに
+                        Button(action: openHeader) {
+                            HStack(spacing: 4) {
+                                if style.showsName {
+                                    Text(headerLabel.text).foregroundStyle(headerLabel.color).fontWeight(.semibold)
+                                } else {
+                                    styleIcon
+                                }
+                                if style.showsName, !style.abbreviation.isEmpty {
+                                    Text(style.abbreviation).font(.caption).foregroundStyle(color)
+                                }
+                            }
+                            .lineLimit(1)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help("クリックで種別（\(style.name)）・登場人物を変える")
                     }
                 }
                 .frame(width: 170, alignment: .leading)
@@ -353,6 +440,7 @@ struct LineRowView: View {
         Picker("登場人物", selection: Binding(get: { line.characterId ?? 0 }, set: { c in
             var l = line; l.characterId = c == 0 ? nil : c
             model.updateLine(l)
+            model.headerEditLineId = nil
         })) {
             Text("（人物なし）").tag(Int64(0))
             ForEach(model.characters) { c in Text(c.name).tag(c.id) }
@@ -378,5 +466,28 @@ struct LineRowView: View {
         guard text != line.text else { return }
         var l = line; l.text = text
         model.updateLine(l)
+    }
+}
+
+/// 縦書きの短いラベル（人物名など）。1 文字ずつ上から下へ並べ、長音・括弧などは 90° 回す。
+/// 高さに収まらないときは文字を小さくする
+struct VerticalLabel: View {
+    let text: String
+    let height: CGFloat
+    var maxSize: CGFloat = 14
+
+    private static let rotated: Set<Character> = ["ー", "―", "－", "-", "〜", "～", "…", "（", "）", "(", ")", "「", "」", "『", "』", "［", "］", "【", "】"]
+
+    var body: some View {
+        let chars = Array(text)
+        let size = max(8, min(maxSize, (height - 2) / CGFloat(max(chars.count, 1))))
+        VStack(spacing: 0) {
+            ForEach(Array(chars.enumerated()), id: \.offset) { _, ch in
+                Text(String(ch))
+                    .font(.system(size: size))
+                    .rotationEffect(Self.rotated.contains(ch) ? .degrees(90) : .zero)
+                    .frame(width: size + 4, height: size)
+            }
+        }
     }
 }

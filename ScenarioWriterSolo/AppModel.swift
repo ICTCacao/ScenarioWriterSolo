@@ -96,8 +96,12 @@ final class AppModel: ObservableObject {
     @Published var confirmDeleteScenario = false
 
     /// 台本画面で選択・フォーカスしている行
-    @Published var selectedLineId: Int64?
+    @Published var selectedLineId: Int64? {
+        didSet { if headerEditLineId != nil, headerEditLineId != selectedLineId { headerEditLineId = nil } }
+    }
     @Published var focusRequestLineId: Int64?
+    /// 種別・人物の選択ボックスを開いている行（ふだんは人物名だけ見せ、クリックで開く。別の行を選ぶと閉じる）
+    @Published var headerEditLineId: Int64?
     /// 「読む」画面を作り直す合図
     @Published var documentVersion = 0
 

@@ -164,6 +164,53 @@ final class AutoHeightTextView: NSTextView {
     /// 最後に適用したフォント・行間などの組（変わったときだけ本文全体に適用し直す）
     var appliedSignature = ""
 
+    /// ⌘Z / ⇧⌘Z: まず欄の中の文字入力（欄ごとの履歴）を戻し、戻すものが無ければウインドウの履歴（行の追加・削除など）へ。
+    /// 欄にフォーカスがあると ⌘Z は欄の履歴にしか届かず、⌘⏎ で足したばかりの空の行を取り消せなかった
+    private var windowUndo: UndoManager? { window?.undoManager }
+
+    @objc func undo(_ sender: Any?) {
+        if let u = undoManager, u.canUndo { u.undo() }
+        else if let w = windowUndo, w.canUndo { w.undo() }
+    }
+
+    @objc func redo(_ sender: Any?) {
+        if let u = undoManager, u.canRedo { u.redo() }
+        else if let w = windowUndo, w.canRedo { w.redo() }
+    }
+
+    override func validateUserInterfaceItem(_ item: NSValidatedUserInterfaceItem) -> Bool {
+        switch item.action {
+        case #selector(undo(_:)):
+            let u = [undoManager, windowUndo].compactMap { $0 }.first { $0.canUndo }
+            (item as? NSMenuItem)?.title = u?.undoMenuItemTitle ?? "取り消す"
+            return u != nil
+        case #selector(redo(_:)):
+            let u = [undoManager, windowUndo].compactMap { $0 }.first { $0.canRedo }
+            (item as? NSMenuItem)?.title = u?.redoMenuItemTitle ?? "やり直す"
+            return u != nil
+        default:
+            return super.validateUserInterfaceItem(item)
+        }
+    }
+
+    /// 縦書き: 外側（列を並べる ScrollView）を AppKit に動かさせない。フォーカスを受けたときなどに
+    /// カーソル位置を見せようとして、縦書きでは見当違いの位置へ数百 pt 飛ぶ（⌘⏎ で行を足すたびに画面が動いた）。
+    /// 列を見せるのは VerticalColumnsView が行単位でする
+    override func scrollRangeToVisible(_ range: NSRange) {
+        if isVerticalLayout { LineTextView.log("v scrollRangeToVisible suppressed \(range)"); return }
+        super.scrollRangeToVisible(range)
+    }
+
+    override func scrollToVisible(_ rect: NSRect) -> Bool {
+        if isVerticalLayout { LineTextView.log("v scrollToVisible suppressed \(rect)"); return false }
+        return super.scrollToVisible(rect)
+    }
+
+    override func scroll(_ point: NSPoint) {
+        if isVerticalLayout { LineTextView.log("v scroll suppressed \(point)"); return }
+        super.scroll(point)
+    }
+
     /// 計測は表示用のレイアウトを触らず、計測専用の NSLayoutManager で行う。
     /// 表示中の textContainer の大きさを書き換えると、レイアウト中にビュー自身がリサイズされて
     /// SwiftUI の再レイアウト要求が起き、AppKit が例外を投げる（縦書きで落ちた原因）

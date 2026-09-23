@@ -81,17 +81,18 @@ struct ScenarioWriterSoloApp: App {
                     .keyboardShortcut("f")
                     .disabled(model.scenario == nil)
                 Divider()
-                Button("この下に行を追加") { model.insertLine(after: model.selectedLineId) }
+                // 縦書きでは行が右から左へ並ぶので「下/上」ではなく「左/右」。次・前の行も ⌘← / ⌘→（本文欄の keyDown と同じ）
+                Button(editorVertical ? "この左に行を追加" : "この下に行を追加") { model.insertLine(after: model.selectedLineId) }
                     .keyboardShortcut(.return, modifiers: [.command])
                     .disabled(model.selectedSceneId == nil || model.section != .script)
-                Button("この上に行を追加") { if let id = model.selectedLineId { model.insertLine(before: id) } }
+                Button(editorVertical ? "この右に行を追加" : "この上に行を追加") { if let id = model.selectedLineId { model.insertLine(before: id) } }
                     .keyboardShortcut(.return, modifiers: [.command, .shift])
                     .disabled(model.selectedLineId == nil || model.section != .script)
-                Button("次の行へ") { model.focusLine(offset: 1) }
-                    .keyboardShortcut(.downArrow, modifiers: [.command])
+                Button(editorVertical ? "次の行へ（左）" : "次の行へ") { model.focusLine(offset: 1) }
+                    .keyboardShortcut(editorVertical ? .leftArrow : .downArrow, modifiers: [.command])
                     .disabled(model.section != .script || model.lines.isEmpty)
-                Button("前の行へ") { model.focusLine(offset: -1) }
-                    .keyboardShortcut(.upArrow, modifiers: [.command])
+                Button(editorVertical ? "前の行へ（右）" : "前の行へ") { model.focusLine(offset: -1) }
+                    .keyboardShortcut(editorVertical ? .rightArrow : .upArrow, modifiers: [.command])
                     .disabled(model.section != .script || model.lines.isEmpty)
                 Divider()
                 Button("行を上へ") { if let id = model.selectedLineId { model.moveLine(id, up: true) } }
