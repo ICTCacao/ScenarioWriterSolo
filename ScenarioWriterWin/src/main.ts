@@ -178,7 +178,12 @@ function px(size: number) { return state.fontSize * (size / 12); }
 function autosize(ta: HTMLTextAreaElement) {
   const vertical = state.vertical || ta.classList.contains("v");
   if (vertical) { ta.style.width = "auto"; ta.style.width = Math.max(ta.scrollWidth, 24) + "px"; }
-  else { ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight, 24) + "px"; }
+  else {
+    // 閉じの「」」の写し（下の renderScript）があれば、その高さも入れる（」だけ次の行に回ることがある）
+    const m = ta.parentElement?.querySelector<HTMLElement>(".mirror");
+    if (m) (m.firstChild as HTMLElement).textContent = ta.value;
+    ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight, m?.offsetHeight ?? 0, 24) + "px";
+  }
 }
 
 function focusLine(i: number, atEnd = false) {
@@ -252,7 +257,20 @@ function renderScript(focus?: number) {
     };
     el.oncontextmenu = (ev) => { ev.preventDefault(); showLineMenu(ev, i); };
     ta.onkeydown = (ev) => onLineKey(ev, i);
-    bd.appendChild(ta);
+    // 横書きで台詞を「」で囲むとき: 本文の最後の文字の後ろに閉じの「」」を出す。テキスト欄には描き足せないので、
+    // 同じ文字を透明にした写しを裏に置き、その最後の「」」だけ見せる（本文の文字にはしない）
+    if (!state.vertical && st.kagi) {
+      const wrap = document.createElement("div"); wrap.className = "tawrap";
+      const m = document.createElement("div"); m.className = "mirror";
+      m.style.fontSize = ta.style.fontSize; m.style.width = ta.style.width;
+      const t = document.createElement("span"); t.textContent = ta.value;
+      const c = document.createElement("span"); c.className = "close"; c.textContent = "」"; c.style.color = st.color;
+      m.append(t, c);
+      wrap.append(m, ta);
+      bd.appendChild(wrap);
+    } else {
+      bd.appendChild(ta);
+    }
     el.appendChild(bd);
     box.appendChild(el);
     autosize(ta);
@@ -279,6 +297,7 @@ function styleIconSvg(name: string, abbr: string): string {
   if (has("音響", "効果音", "se", "音")) return svg(`<path d="M3 8h3l4-4v12l-4-4H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.5 4.5a7.5 7.5 0 0 1 0 11"/>`);
   if (has("照明", "明かり", "ライト")) return svg(`<path d="M7 14c0-2-3-3.5-3-7a6 6 0 0 1 12 0c0 3.5-3 5-3 7z" fill="currentColor"/><path d="M8 17h4"/>`);
   if (has("演技", "動き")) return svg(`<circle cx="11" cy="3.5" r="1.8" fill="currentColor"/><path d="M10 7l-3 3 2 2M10 7l1 5-3 6M11 12l3 5M10 7l4 3"/>`);
+  if (has("フェード", "暗転", "f.i", "f.o")) return svg(`<circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/>`);
   return svg(`<circle cx="10" cy="10" r="5" fill="currentColor"/>`);
 }
 
@@ -323,7 +342,8 @@ function buildHeader(hd: HTMLElement, el: HTMLElement, line: M.Line, i: number) 
     // 縦書きは見出しの高さに収まるよう、長い名前は文字を小さく
     if (state.vertical) nm.style.fontSize = Math.max(8, Math.min(14, 50 / Math.max(name.length, 1))) + "px";
     lab.appendChild(nm);
-    if (st.abbr) { const a = document.createElement("span"); a.className = "ab"; a.textContent = st.abbr; a.style.color = st.color; lab.appendChild(a); }
+    // 省略文字（NA / M）は横書きだけ（縦書きは見出しの高さに収まらない。Mac 版と同じ）
+    if (st.abbr && !state.vertical) { const a = document.createElement("span"); a.className = "ab"; a.textContent = st.abbr; a.style.color = st.color; lab.appendChild(a); }
   } else {
     lab.innerHTML = styleIconSvg(st.name, st.abbr);
     lab.style.color = st.color;

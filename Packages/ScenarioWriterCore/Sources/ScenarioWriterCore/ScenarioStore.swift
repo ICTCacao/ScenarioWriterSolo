@@ -217,7 +217,8 @@ public final class ScenarioStore {
             userId = db.lastInsertRowId
         }
         if try db.scalarInt("SELECT COUNT(*) FROM SW_USER_OPTION_SETTING WHERE USER_ID = ?", [.int(userId)]) == 0 {
-            try db.run("INSERT INTO SW_USER_OPTION_SETTING (USER_ID, CHARACTER_LENGTH, BODY_LENGTH, USE_KAGIKAKKO) VALUES (?, 8, 32, 1)", [.int(userId)])
+            // 台詞を「」で囲むのは既定でオフ（β7〜）
+            try db.run("INSERT INTO SW_USER_OPTION_SETTING (USER_ID, CHARACTER_LENGTH, BODY_LENGTH, USE_KAGIKAKKO) VALUES (?, 8, 32, 0)", [.int(userId)])
         }
         if try db.scalarInt("SELECT COUNT(*) FROM SW_USER_OPTION WHERE USER_ID = ?", [.int(userId)]) == 0 {
             try resetStylesToDefault()

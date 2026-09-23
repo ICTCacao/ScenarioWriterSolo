@@ -97,6 +97,11 @@ button.icon:hover { color: var(--text); background: var(--sel); }
 .lines.horizontal .line .kagi { color: var(--muted); padding-top: 6px; }
 .lines.horizontal .line .bd { flex: 1 1 auto; display: flex; align-items: flex-start; }
 .lines.horizontal .line textarea.body { min-height: 1.6em; }
+/* 閉じの「」」: 本文と同じ組み方の透明な写しを裏に置き、最後の「」」だけ見せる */
+.lines.horizontal .line .tawrap { position: relative; flex: 0 0 auto; }
+.lines.horizontal .line .tawrap textarea.body { position: relative; z-index: 1; }
+.lines.horizontal .line .mirror { position: absolute; left: 0; top: 0; font-family: var(--body-font); line-height: 1.6; padding: 4px; border: 1.5px solid transparent; white-space: pre-wrap; overflow-wrap: anywhere; color: transparent; pointer-events: none; }
+.lines.horizontal .line .mirror .close { opacity: 0.6; }
 /* 縦書き: 上に見出し、下に本文。列は右から左 */
 .lines.vertical .line { display: flex; flex-direction: column; align-items: flex-end; height: 100%; }
 /* 選択ボックスを開いた列だけ広げる。閉じているときは人物名を縦書きで出し、列は本文の幅まで細く */

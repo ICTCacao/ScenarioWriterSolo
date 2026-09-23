@@ -68,7 +68,7 @@ export function emptyFile(title = "無題", scenes = 1, characters = 2): ScwdFil
     scenario: { title, subtitle: "", writer: "", memo: "", date: now(), category: 1 },
     synopsis: "", characters: [], scenes: [],
     styles: defaultStyles(), textStyles: defaultTextStyles(),
-    setting: { characterLength: 8, bodyLength: 32, kagikakko: true },
+    setting: { characterLength: 8, bodyLength: 32, kagikakko: false },   // 台詞を「」で囲むのは既定でオフ（β7〜）
   };
   for (let i = 1; i <= scenes; i++) f.scenes.push({ name: `　${i}場`, description: "", valid: true, minutes: 0, seconds: 0, lines: [] });
   for (let i = 1; i <= characters; i++) f.characters.push({ id: i, name: `登場人物${i}`, chara: "" });

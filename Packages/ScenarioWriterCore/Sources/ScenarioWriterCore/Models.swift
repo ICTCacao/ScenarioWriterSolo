@@ -179,7 +179,7 @@ public struct OptionSetting: Hashable, Sendable {
     public var bodyLength: Int       // テキスト出力の本文 1 行の文字数
     public var useKagikakko: Bool
 
-    public init(characterLength: Int = 8, bodyLength: Int = 32, useKagikakko: Bool = true) {
+    public init(characterLength: Int = 8, bodyLength: Int = 32, useKagikakko: Bool = false) {
         self.characterLength = characterLength; self.bodyLength = bodyLength; self.useKagikakko = useKagikakko
     }
 }

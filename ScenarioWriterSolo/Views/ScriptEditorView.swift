@@ -195,6 +195,7 @@ struct LineRowView: View {
                          kern: CGFloat(kern),
                          vertical: vertical,
                          fixedWidth: vertical ? nil : EditorMetrics.bodyExtent(chars: model.setting.bodyLength, indent: style.indent, pointSize: pointSize, kern: CGFloat(kern)),
+                         closingMark: !vertical && style.kagikakko ? "」" : nil,   // 横書きだけ（縦書きは開きの「「」も出さない）
                          requestFocus: wantsFocus,
                          onFocusChange: { f in
                              focused = f
@@ -339,6 +340,7 @@ struct LineRowView: View {
         if has("音響", "効果音", "SE", "音") { return "speaker.wave.2.fill" }
         if has("照明", "明かり", "ライト") { return "lightbulb.fill" }
         if has("演技", "動き") { return "figure.walk" }
+        if has("フェード", "暗転", "F.I", "F.O") { return "circle.lefthalf.filled" }
         return "circle.fill"
     }
 

@@ -285,7 +285,7 @@
   "setting": {
     "bodyLength": 32,
     "characterLength": 8,
-    "kagikakko": true
+    "kagikakko": false
   },
   "styles": [
     {

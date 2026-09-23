@@ -106,7 +106,8 @@ public struct ScenarioFile: Codable, Sendable, Equatable {
     public struct Setting: Codable, Sendable, Equatable {
         public var characterLength = 8
         public var bodyLength = 32
-        public var kagikakko = true
+        /// 新しい作品は「」で囲まない（β7〜）。読み込みで項目が無いときは、古いファイルの見た目を変えないよう true
+        public var kagikakko = false
         public init() {}
         public init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)

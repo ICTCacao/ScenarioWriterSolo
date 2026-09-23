@@ -124,6 +124,9 @@ final class CoreTests: XCTestCase {
 
     func testExporters() throws {
         let store = try tempStore()
+        // 台詞を「」で囲むのは既定でオフ。このテストでは囲む書き出しを確かめるのでオンにする
+        XCTAssertFalse(try store.setting().useKagikakko)
+        try store.saveSetting(OptionSetting(useKagikakko: true))
         let id = try store.createScenario(Scenario(title: "台本<&>", subtitle: "副題", writerName: "作者"), acts: 1, scenesPerAct: 1, characterCount: 1)
         let sc = try store.scenes(scenarioId: id)[0]
         let ch = try store.characters(scenarioId: id)[0]

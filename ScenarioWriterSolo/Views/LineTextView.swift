@@ -16,6 +16,8 @@ struct LineTextView: NSViewRepresentable {
     /// 提案に合わせて幅を変えると、HStack / List が 462 と 328.5 のような 2 つの幅で交互に測り、
     /// 幅ごとに高さが違うため枠が往復して固まる（2026-09-22 に本人環境で発生）
     var fixedWidth: CGFloat? = nil
+    /// 本文の後ろに描き足す閉じ括弧（台詞を「」で囲むとき「」」）。本文の文字にはしない（作品ファイルは変えない）
+    var closingMark: String? = nil
     /// true を渡すとフォーカスを取りに行く。取ったら onFocusRequestHandled で知らせる
     var requestFocus: Bool
     var onFocusChange: (Bool) -> Void
@@ -91,6 +93,7 @@ struct LineTextView: NSViewRepresentable {
     }
 
     private func apply(to v: AutoHeightTextView) {
+        if v.closingMark != closingMark { v.closingMark = closingMark; v.invalidateIntrinsicContentSize(); v.needsLayout = true }
         let ps = NSMutableParagraphStyle()
         ps.lineHeightMultiple = max(lineHeightMultiple, 0.5)
         let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color, .paragraphStyle: ps, .kern: kern]
@@ -163,6 +166,53 @@ final class AutoHeightTextView: NSTextView {
     var isVerticalLayout = false
     /// 最後に適用したフォント・行間などの組（変わったときだけ本文全体に適用し直す）
     var appliedSignature = ""
+    /// 本文の最後の文字の後ろに薄く描く閉じ括弧（「」の「」」）。欄の大きさもこのぶんを含めて測る
+    var closingMark: String?
+
+    override func didChangeText() {
+        super.didChangeText()
+        if closingMark != nil { needsLayout = true }
+    }
+
+    /// 閉じ括弧を描く小さなビュー（文字欄の上に重ねる。TextKit 2 では文字は別の層に描かれ、
+    /// NSTextView 自身の draw(_:) に描いても見えないため）
+    private final class MarkView: NSView {
+        var attributed = NSAttributedString()
+        override var isFlipped: Bool { true }
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }   // クリックは文字欄へ
+        override func draw(_ dirtyRect: NSRect) { attributed.draw(at: .zero) }
+    }
+    private lazy var markView: MarkView = { let v = MarkView(); addSubview(v); return v }()
+
+    override func layout() {
+        super.layout()
+        placeClosingMark()
+    }
+
+    /// 閉じ括弧を本文の最後の文字の後ろに置く。行に入らなければ次の行の頭
+    func placeClosingMark() {
+        guard let mark = closingMark, !mark.isEmpty, !isVerticalLayout, let tlm = textLayoutManager, let f = font else {
+            if subviews.contains(where: { $0 === markView }) { markView.isHidden = true }
+            return
+        }
+        tlm.ensureLayout(for: tlm.documentRange)
+        var caret = CGRect.null
+        tlm.enumerateTextSegments(in: NSTextRange(location: tlm.documentRange.endLocation), type: .standard, options: []) { _, r, _, _ in
+            caret = r; return false
+        }
+        if caret.isNull { caret = CGRect(x: textContainer?.lineFragmentPadding ?? 0, y: 0, width: 0, height: f.boundingRectForFont.height) }
+        let attrs: [NSAttributedString.Key: Any] = [.font: f, .foregroundColor: (textColor ?? .textColor).withAlphaComponent(0.6)]
+        let str = NSAttributedString(string: mark, attributes: attrs)
+        let size = str.size()
+        let lineLength = (textContainer?.size.width ?? bounds.width) - (textContainer?.lineFragmentPadding ?? 0)
+        var x = caret.minX, y = caret.minY
+        if x + size.width > lineLength { x = textContainer?.lineFragmentPadding ?? 0; y = caret.maxY }
+        let o = textContainerOrigin
+        markView.attributed = str
+        markView.frame = NSRect(x: o.x + x, y: o.y + y, width: ceil(size.width) + 1, height: ceil(size.height) + 1)
+        markView.isHidden = false
+        markView.needsDisplay = true
+    }
 
     /// ⌘Z / ⇧⌘Z: まず欄の中の文字入力（欄ごとの履歴）を戻し、戻すものが無ければウインドウの履歴（行の追加・削除など）へ。
     /// 欄にフォーカスがあると ⌘Z は欄の履歴にしか届かず、⌘⏎ で足したばかりの空の行を取り消せなかった
@@ -220,7 +270,10 @@ final class AutoHeightTextView: NSTextView {
         // SwiftUI の更新と衝突して落ちる（2026-09-22 のクラッシュ。縦書き・横書きとも同じ経路）。
         // 縦書きも横組みで測る: 日本語の字送りは縦横とも 1 文字 1em、行送りも同じなので行数が一致する
         let m = Self.measurer
-        let src = attributedString()
+        let src = NSMutableAttributedString(attributedString: attributedString())
+        if let mark = closingMark, !mark.isEmpty {
+            src.append(NSAttributedString(string: mark, attributes: src.length > 0 ? src.attributes(at: src.length - 1, effectiveRange: nil) : [.font: font ?? NSFont.systemFont(ofSize: 14)]))
+        }
         m.content.performEditingTransaction {
             if src.length == 0 {
                 m.content.textStorage?.setAttributedString(NSAttributedString(string: " ", attributes: [.font: font ?? NSFont.systemFont(ofSize: 14)]))
