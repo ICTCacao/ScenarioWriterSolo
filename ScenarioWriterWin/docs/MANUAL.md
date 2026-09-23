@@ -1,16 +1,16 @@
 # ScenarioWriterSolo（Windows 版）マニュアル
 
-β5　2026 年 9 月
+β7　2026 年 9 月
 
 ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。この Windows 版は、Mac 版 ScenarioWriterSolo と同じ作品ファイル（`タイトル.scwd`）を読み書きします。縦書きでの編集が目玉です。
 
 ## 1. インストール
 
-1. `ScenarioWriterWin-β5-setup.exe` をダブルクリックします。
+1. `ScenarioWriterWin-β7-setup.exe` をダブルクリックします。
 2. 「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。
 3. 画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、`.scwd` ファイルがこのアプリに関連付けられます。
 
-インストールせずに使うときは `ScenarioWriterWin-β5-portable.exe` をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 `.scwd` の関連付けはされません）。
+インストールせずに使うときは `ScenarioWriterWin-β7-portable.exe` をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 `.scwd` の関連付けはされません）。
 
 アンインストールは「設定 › アプリ」から。作品ファイルは消えません。
 

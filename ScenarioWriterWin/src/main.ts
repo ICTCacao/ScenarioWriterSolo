@@ -18,6 +18,8 @@ const state = {
   vertical: localStorage.getItem("sw_vertical") === "1",
   fontSize: parseInt(localStorage.getItem("sw_fontSize") || "16", 10) || 16,
   selected: -1,
+  /** 種別・人物の選択ボックスを開いている行（ふだんは人物名だけ。クリックで開く。Mac 版と同じ） */
+  headerOpen: -1,
 };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -33,7 +35,7 @@ function updateTitle() {
   const f = state.file;
   const name = f ? (f.scenario.title || "無題") : "作品を開いていません";
   $("docTitle").textContent = f ? `${name}${state.dirty ? " — 未保存の変更あり（Ctrl+S で保存）" : ""}` : name;
-  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β5）`).catch(() => {});
+  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β7）`).catch(() => {});
 }
 
 function markDirty() { if (!state.dirty) { state.dirty = true; updateTitle(); } }
@@ -62,7 +64,7 @@ async function openPath(path: string) {
   try {
     const text = await invoke<string>("read_text_file", { path });
     const f = M.parse(text);
-    state.file = f; state.path = path; state.dirty = false; state.scene = 0; state.selected = -1;
+    state.file = f; state.path = path; state.dirty = false; state.scene = 0; state.selected = -1; state.headerOpen = -1;
     addRecent(path, f.scenario.title);
     if (state.section === "read") state.section = "script";
     render();
@@ -84,7 +86,7 @@ async function newFile() {
   const path = await saveDialog({ filters: FILTERS, defaultPath: "無題.scwd", title: "新しい作品ファイルの保存先" });
   if (!path) return;
   const name = path.replace(/\\/g, "/").split("/").pop()!.replace(/\.scwd$/i, "");
-  state.file = M.emptyFile(name, 1, 2); state.path = path; state.dirty = false; state.scene = 0; state.selected = -1;
+  state.file = M.emptyFile(name, 1, 2); state.path = path; state.dirty = false; state.scene = 0; state.selected = -1; state.headerOpen = -1;
   applyLastStyles(state.file);
   state.section = "script";
   render(); updateTitle();
@@ -158,7 +160,7 @@ function renderSidebar() {
     const li = document.createElement("li");
     li.className = i === state.scene && state.section === "script" ? "on" : "";
     li.innerHTML = `<span class="n">${i + 1}. ${M.escapeHtml(s.name || "（無題の場面）")}</span><span class="c">${s.lines.length}</span>`;
-    li.onclick = () => { state.scene = i; state.selected = -1; state.section = "script"; render(); };
+    li.onclick = () => { state.scene = i; state.selected = -1; state.headerOpen = -1; state.section = "script"; render(); };
     sl.appendChild(li);
   });
   f.characters.forEach((c) => {
@@ -182,9 +184,20 @@ function autosize(ta: HTMLTextAreaElement) {
 function focusLine(i: number, atEnd = false) {
   const ta = document.querySelector<HTMLTextAreaElement>(`.line[data-i="${i}"] textarea.body`);
   if (!ta) return;
-  ta.focus();
+  // ブラウザにスクロールさせない（scrollIntoView は縦書きでも縦にずらし、見出しが上に隠れた）。
+  // 見えていない行だけ、見えるところまで動かす
+  ta.focus({ preventScroll: true });
   if (atEnd) ta.setSelectionRange(ta.value.length, ta.value.length);
-  ta.scrollIntoView({ block: "nearest", inline: "nearest" });
+  const box = $("lines");
+  const r = ta.closest<HTMLElement>(".line")!.getBoundingClientRect(), b = box.getBoundingClientRect();
+  if (state.vertical) {
+    if (r.left < b.left) box.scrollLeft -= b.left - r.left + 24;
+    else if (r.right > b.right) box.scrollLeft += r.right - b.right + 24;
+    box.scrollTop = 0;
+  } else {
+    if (r.top < b.top) box.scrollTop -= b.top - r.top + 24;
+    else if (r.bottom > b.bottom) box.scrollTop += r.bottom - b.bottom + 24;
+  }
 }
 
 function renderScript(focus?: number) {
@@ -198,8 +211,14 @@ function renderScript(focus?: number) {
   $("sceneDesc").textContent = scene ? scene.description.replace(/\n/g, " ") : "";
   $("lineCount").textContent = scene ? `${scene.lines.length} 行` : "";
   const box = $("lines");
+  // 作り直しても同じ場面なら位置を保つ（縦書きは右端＝先頭からの距離）
+  const sameScene = box.dataset.scene === String(state.scene) && box.className.includes(state.vertical ? "vertical" : "horizontal");
+  const fromRight = box.scrollWidth - box.scrollLeft, top = box.scrollTop;
+  box.dataset.scene = String(state.scene);
   box.className = "lines " + (state.vertical ? "vertical" : "horizontal");
   box.innerHTML = "";
+  // 縦書きの本文欄は画面の高さに収める（Mac 版と同じ: 列に入る高さと「本文の文字数」ぶんの短いほう）
+  const columnH = box.clientHeight - 16 - 12 - 56 - 4;
   if (!scene) { box.innerHTML = `<div class="hint">場面がありません。「場面」画面で場面を追加すると台詞を書けます。</div>`; return; }
   const bodyChars = (indent: number) => Math.max(f.setting.bodyLength - indent, 4);
   scene.lines.forEach((line, i) => {
@@ -207,27 +226,9 @@ function renderScript(focus?: number) {
     const el = document.createElement("div");
     el.className = "line" + (i === state.selected ? " sel" : "");
     el.dataset.i = String(i);
-    // 見出し: 種別・人物（または省略文字）・メニュー
+    // 見出し: ふだんは人物名（人物を出さない種別は文字色のアイコン）。クリックで種別・人物の選択ボックス
     const hd = document.createElement("div"); hd.className = "hd";
-    const typeSel = document.createElement("select"); typeSel.className = "type";
-    typeSel.innerHTML = [...f.styles].sort((a, b) => a.order - b.order).map((s) => `<option value="${s.id}" ${s.id === line.type ? "selected" : ""}>${M.escapeHtml(s.name)}</option>`).join("")
-      + (f.styles.some((s) => s.id === line.type) ? "" : `<option value="${line.type}" selected>種別 ${line.type}</option>`);
-    typeSel.style.color = st.color;
-    typeSel.onchange = () => { line.type = parseInt(typeSel.value, 10); markDirty(); renderScript(i); };
-    const row1 = document.createElement("div"); row1.style.display = "flex"; row1.style.gap = "4px"; row1.style.alignItems = "center";
-    row1.appendChild(typeSel);
-    const menu = document.createElement("button"); menu.className = "menu"; menu.textContent = "⋯"; menu.title = "行の操作";
-    menu.onclick = (ev) => showLineMenu(ev, i);
-    row1.appendChild(menu);
-    hd.appendChild(row1);
-    if (st.showsName) {
-      const cs = document.createElement("select"); cs.className = "chara";
-      cs.innerHTML = `<option value="">（人物なし）</option>` + f.characters.map((c) => `<option value="${c.id}" ${c.id === line.character ? "selected" : ""}>${M.escapeHtml(c.name)}</option>`).join("");
-      cs.onchange = () => { if (cs.value) line.character = parseInt(cs.value, 10); else delete line.character; markDirty(); };
-      hd.appendChild(cs);
-    } else {
-      const ab = document.createElement("div"); ab.className = "abbr"; ab.textContent = st.abbr; ab.style.color = st.color; hd.appendChild(ab);
-    }
+    buildHeader(hd, el, line, i);
     el.appendChild(hd);
     // 本文: 「読む」と同じ文字数で折り返す。文字の大きさと色はスタイルに従う
     const bd = document.createElement("div"); bd.className = "bd";
@@ -236,7 +237,8 @@ function renderScript(focus?: number) {
     ta.style.fontSize = px(st.size) + "px"; ta.style.color = st.color;
     const n = bodyChars(st.indent);
     if (state.vertical) {
-      ta.style.height = `calc(${n}em + 10px)`;
+      const fp = px(st.size);
+      ta.style.height = columnH > 0 ? `${Math.max(120, Math.min(n * fp + 10, columnH - st.indent * fp))}px` : `calc(${n}em + 10px)`;
       ta.style.marginTop = `${st.indent}em`;
     } else {
       ta.style.width = `calc(${n}em + 10px)`;
@@ -244,7 +246,11 @@ function renderScript(focus?: number) {
       if (st.kagi) { const k = document.createElement("span"); k.className = "kagi"; k.textContent = "「"; k.style.color = st.color; bd.appendChild(k); }
     }
     ta.oninput = () => { line.text = ta.value; markDirty(); autosize(ta); };
-    ta.onfocus = () => { document.querySelectorAll(".line.sel").forEach((x) => x.classList.remove("sel")); el.classList.add("sel"); state.selected = i; };
+    ta.onfocus = () => {
+      document.querySelectorAll(".line.sel").forEach((x) => x.classList.remove("sel")); el.classList.add("sel"); state.selected = i;
+      closeHeader();   // 本文を書き始めたら選択ボックスは閉じる
+    };
+    el.oncontextmenu = (ev) => { ev.preventDefault(); showLineMenu(ev, i); };
     ta.onkeydown = (ev) => onLineKey(ev, i);
     bd.appendChild(ta);
     el.appendChild(bd);
@@ -255,10 +261,102 @@ function renderScript(focus?: number) {
   const ab = document.createElement("button"); ab.textContent = "＋ 行を追加"; ab.onclick = () => insertLine(scene.lines.length);
   add.appendChild(ab); box.appendChild(add);
   if (!scene.lines.length) { const h = document.createElement("div"); h.className = "hint"; h.textContent = "まだ台詞がありません。「行を追加」か、行の中で Ctrl+Enter で書き始めてください。"; box.appendChild(h); }
-  // 縦書きは右端（先頭）から
-  if (state.vertical) box.scrollLeft = box.scrollWidth;
+  // 縦書きは右端（先頭）から。同じ場面の作り直し（行の追加など）では位置を保つ
+  if (state.vertical) { box.scrollLeft = sameScene ? box.scrollWidth - fromRight : box.scrollWidth; box.scrollTop = 0; }
+  else if (sameScene) box.scrollTop = top;
   if (focus !== undefined) focusLine(focus, true);
   renderSidebar();
+}
+
+/** 人物を出さない種別のアイコン（Mac 版の SF Symbols に寄せた線画）。種別名はユーザーが変えられるので名前から選ぶ */
+function styleIconSvg(name: string, abbr: string): string {
+  const n = `${name} ${abbr}`.toLowerCase();
+  const has = (...k: string[]) => k.some((x) => n.includes(x.toLowerCase()));
+  const svg = (body: string) => `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+  if (has("ト書")) return svg(`<path d="M3 5h14M3 10h10M3 15h12"/>`);
+  if (has("歌", "song")) return svg(`<path d="M8 15V4l9-2v11"/><circle cx="5.5" cy="15" r="2.5" fill="currentColor"/><circle cx="14.5" cy="13" r="2.5" fill="currentColor"/>`);
+  if (has("テロップ", "字幕")) return svg(`<rect x="2" y="3" width="16" height="11" rx="2"/><path d="M5 7h6M5 10h9M7 14l-2 4 5-4"/>`);
+  if (has("音響", "効果音", "se", "音")) return svg(`<path d="M3 8h3l4-4v12l-4-4H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.5 4.5a7.5 7.5 0 0 1 0 11"/>`);
+  if (has("照明", "明かり", "ライト")) return svg(`<path d="M7 14c0-2-3-3.5-3-7a6 6 0 0 1 12 0c0 3.5-3 5-3 7z" fill="currentColor"/><path d="M8 17h4"/>`);
+  if (has("演技", "動き")) return svg(`<circle cx="11" cy="3.5" r="1.8" fill="currentColor"/><path d="M10 7l-3 3 2 2M10 7l1 5-3 6M11 12l3 5M10 7l4 3"/>`);
+  return svg(`<circle cx="10" cy="10" r="5" fill="currentColor"/>`);
+}
+
+/** 行の見出しを作る（開いている行は種別・人物の選択ボックス、閉じている行は人物名かアイコン） */
+function buildHeader(hd: HTMLElement, el: HTMLElement, line: M.Line, i: number) {
+  const f = state.file!;
+  const st = M.resolveStyle(f, line.type);
+  const open = state.headerOpen === i;
+  el.classList.toggle("open", open);
+  hd.innerHTML = "";
+  const menu = document.createElement("button"); menu.className = "menu"; menu.textContent = "⋯"; menu.title = "行の操作";
+  menu.onclick = (ev) => showLineMenu(ev, i);
+  if (open) {
+    const typeSel = document.createElement("select"); typeSel.className = "type";
+    typeSel.innerHTML = [...f.styles].sort((a, b) => a.order - b.order).map((s) => `<option value="${s.id}" ${s.id === line.type ? "selected" : ""}>${M.escapeHtml(s.name)}</option>`).join("")
+      + (f.styles.some((s) => s.id === line.type) ? "" : `<option value="${line.type}" selected>種別 ${line.type}</option>`);
+    typeSel.style.color = st.color;
+    // 種別を変えても開いたまま（続けて人物を選べるように）
+    typeSel.onchange = () => { line.type = parseInt(typeSel.value, 10); markDirty(); renderScript(); };
+    const row1 = document.createElement("div"); row1.style.display = "flex"; row1.style.gap = "4px"; row1.style.alignItems = "center";
+    row1.appendChild(typeSel);
+    row1.appendChild(menu);
+    hd.appendChild(row1);
+    if (st.showsName) {
+      const cs = document.createElement("select"); cs.className = "chara";
+      cs.innerHTML = `<option value="">（人物なし）</option>` + f.characters.map((c) => `<option value="${c.id}" ${c.id === line.character ? "selected" : ""}>${M.escapeHtml(c.name)}</option>`).join("")
+        + (line.character !== undefined && !f.characters.some((c) => c.id === line.character) ? `<option value="${line.character}" selected>（削除された人物）</option>` : "");
+      // 人物を選んだら閉じる
+      cs.onchange = () => { if (cs.value) line.character = parseInt(cs.value, 10); else delete line.character; markDirty(); closeHeader(); };
+      hd.appendChild(cs);
+    } else {
+      const ab = document.createElement("div"); ab.className = "abbr"; ab.textContent = st.abbr; ab.style.color = st.color; hd.appendChild(ab);
+    }
+    return;
+  }
+  const lab = document.createElement("button"); lab.className = "hlabel";
+  lab.title = `クリックで種別（${st.name}）・登場人物を変える`;
+  if (st.showsName) {
+    const c = line.character !== undefined ? f.characters.find((x) => x.id === line.character) : undefined;
+    const name = line.character === undefined ? "（人物なし）" : (c ? c.name || "（無名）" : "（削除された人物）");
+    const nm = document.createElement("span"); nm.className = "nm" + (line.character === undefined ? " none" : ""); nm.textContent = name;
+    // 縦書きは見出しの高さに収まるよう、長い名前は文字を小さく
+    if (state.vertical) nm.style.fontSize = Math.max(8, Math.min(14, 50 / Math.max(name.length, 1))) + "px";
+    lab.appendChild(nm);
+    if (st.abbr) { const a = document.createElement("span"); a.className = "ab"; a.textContent = st.abbr; a.style.color = st.color; lab.appendChild(a); }
+  } else {
+    lab.innerHTML = styleIconSvg(st.name, st.abbr);
+    lab.style.color = st.color;
+  }
+  lab.onclick = (ev) => { ev.stopPropagation(); openHeader(i); };
+  hd.appendChild(lab);
+  // 横書きの ⋯ はいつも出す（Mac 版と同じ）。縦書きは開いたときだけ（右クリックでも同じメニュー）
+  if (!state.vertical) hd.appendChild(menu);
+}
+
+function refreshHeader(i: number) {
+  const scene = state.file?.scenes[state.scene];
+  const el = document.querySelector<HTMLElement>(`.line[data-i="${i}"]`);
+  const hd = el?.querySelector<HTMLElement>(".hd");
+  if (!scene || !el || !hd || !scene.lines[i]) return;
+  buildHeader(hd, el, scene.lines[i], i);
+}
+
+function openHeader(i: number) {
+  const prev = state.headerOpen;
+  state.headerOpen = i;
+  if (prev >= 0 && prev !== i) refreshHeader(prev);
+  document.querySelectorAll(".line.sel").forEach((x) => x.classList.remove("sel"));
+  document.querySelector(`.line[data-i="${i}"]`)?.classList.add("sel");
+  state.selected = i;
+  refreshHeader(i);
+}
+
+function closeHeader() {
+  const prev = state.headerOpen;
+  if (prev < 0) return;
+  state.headerOpen = -1;
+  refreshHeader(prev);
 }
 
 function onLineKey(ev: KeyboardEvent, i: number) {
@@ -289,7 +387,7 @@ function insertLine(at: number) {
   if (prev?.character !== undefined && M.resolveStyle(f, line.type).showsName) line.character = prev.character;
   scene.lines.splice(at, 0, line);
   markDirty();
-  state.selected = at;
+  state.selected = at; state.headerOpen = -1;
   renderScript(at);
 }
 
@@ -297,6 +395,7 @@ function deleteLine(i: number) {
   const scene = state.file!.scenes[state.scene];
   scene.lines.splice(i, 1);
   markDirty();
+  state.headerOpen = -1;
   state.selected = Math.min(i, scene.lines.length - 1);
   renderScript(state.selected >= 0 ? state.selected : undefined);
 }
@@ -307,6 +406,7 @@ function moveLine(i: number, d: number) {
   if (j < 0 || j >= scene.lines.length) return;
   [scene.lines[i], scene.lines[j]] = [scene.lines[j], scene.lines[i]];
   markDirty();
+  state.headerOpen = -1;
   state.selected = j;
   renderScript(j);
 }
@@ -704,12 +804,18 @@ function exportDialog() {
 // ---- 全体の操作
 
 let verticalMenuItem: CheckMenuItem | null = null;
+/** 編集メニューの行の追加。縦書きでは「左/右」、横書きでは「下/上」（Mac 版と同じ） */
+let menuAfter: MenuItem | null = null;
+let menuBefore: MenuItem | null = null;
 
 function setVertical(v: boolean) {
   state.vertical = v;
   localStorage.setItem("sw_vertical", v ? "1" : "0");
-  $("btnVertical").classList.toggle("on", v);
-  $("btnVertical").textContent = v ? "縦書き" : "横書き";
+  // ボタンは押したら切り替わる先を出す（横書きのときは「縦書き」、縦書きのときは「横書き」）
+  $("btnVertical").textContent = v ? "横書き" : "縦書き";
+  $("btnVertical").title = v ? "横書きで編集（Ctrl+Alt+T）" : "縦書きで編集（Ctrl+Alt+T）";
+  menuAfter?.setText(v ? "選択中の行の左に追加　Ctrl+Enter" : "選択中の行の下に追加　Ctrl+Enter").catch(() => {});
+  menuBefore?.setText(v ? "選択中の行の右に追加　Ctrl+Shift+Enter" : "選択中の行の上に追加　Ctrl+Shift+Enter").catch(() => {});
   verticalMenuItem?.setChecked(v).catch(() => {});
   if (state.file) show(state.section);
 }
@@ -774,8 +880,8 @@ async function setupMenu() {
     await item("すべて選択", () => editCommand("selectAll")),
     await sep(),
     await item("行を追加（末尾）", () => { if (state.file?.scenes[state.scene]) insertLine(state.file.scenes[state.scene].lines.length); }),
-    await item("選択中の行の後に追加　Ctrl+Enter", () => { if (state.selected >= 0) insertLine(state.selected + 1); }),
-    await item("選択中の行の前に追加　Ctrl+Shift+Enter", () => { if (state.selected >= 0) insertLine(state.selected); }),
+    (menuAfter = await item(state.vertical ? "選択中の行の左に追加　Ctrl+Enter" : "選択中の行の下に追加　Ctrl+Enter", () => { if (state.selected >= 0) insertLine(state.selected + 1); })),
+    (menuBefore = await item(state.vertical ? "選択中の行の右に追加　Ctrl+Shift+Enter" : "選択中の行の上に追加　Ctrl+Shift+Enter", () => { if (state.selected >= 0) insertLine(state.selected); })),
     await item("選択中の行を削除", () => { if (state.selected >= 0) deleteLine(state.selected); }),
     await sep(),
     await item("場面を追加", addScene),
@@ -810,7 +916,7 @@ async function setupMenu() {
 async function closeFile() {
   if (!state.file) return;
   if (!(await confirmDiscard("作品を閉じる"))) return;
-  state.file = null; state.path = null; state.dirty = false; state.selected = -1;
+  state.file = null; state.path = null; state.dirty = false; state.selected = -1; state.headerOpen = -1;
   render(); updateTitle();
 }
 
@@ -825,10 +931,17 @@ function setup() {
   document.documentElement.style.setProperty("--base-fs", state.fontSize + "px");
   document.querySelectorAll<HTMLButtonElement>(".sections button").forEach((b) => { b.onclick = () => { if (state.file) show(b.dataset.section as Section); }; });
   $("btnAddScene").onclick = addScene; $("btnAddCast").onclick = addCast;
-  ($("sceneSelect") as HTMLSelectElement).onchange = (e) => { state.scene = parseInt((e.target as HTMLSelectElement).value, 10); state.selected = -1; renderScript(); };
-  $("btnPrevScene").onclick = () => { if (state.scene > 0) { state.scene--; state.selected = -1; renderScript(); } };
-  $("btnNextScene").onclick = () => { if (state.file && state.scene < state.file.scenes.length - 1) { state.scene++; state.selected = -1; renderScript(); } };
+  ($("sceneSelect") as HTMLSelectElement).onchange = (e) => { state.scene = parseInt((e.target as HTMLSelectElement).value, 10); state.selected = -1; state.headerOpen = -1; renderScript(); };
+  $("btnPrevScene").onclick = () => { if (state.scene > 0) { state.scene--; state.selected = -1; state.headerOpen = -1; renderScript(); } };
+  $("btnNextScene").onclick = () => { if (state.file && state.scene < state.file.scenes.length - 1) { state.scene++; state.selected = -1; state.headerOpen = -1; renderScript(); } };
   $("btnAddLine").onclick = () => { if (state.file?.scenes[state.scene]) insertLine(state.file.scenes[state.scene].lines.length); };
+  // 縦書き: ウインドウの高さが変わったら本文欄の高さを合わせ直す。縦には動かさない
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => { if (state.file && state.section === "script" && state.vertical) renderScript(state.selected >= 0 ? state.selected : undefined); }, 150);
+  });
+  $("lines").addEventListener("scroll", () => { const b = $("lines"); if (state.vertical && b.scrollTop !== 0) b.scrollTop = 0; });
   if (inTauri()) {
     $("fileButtons").classList.add("hidden");
     setupMenu().catch((e) => console.warn("menu", e));

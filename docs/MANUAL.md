@@ -1,12 +1,12 @@
 # ScenarioWriterSolo（Mac 版）マニュアル
 
-β5　2026 年 9 月
+β7　2026 年 9 月
 
 ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。Web 版 ScenarioWriterCafe と同じ考え方で、PHP も Web サーバもログインも要りません。縦書きでの編集ができ、作品ファイル（`タイトル.scwd`）は Windows 版と共通です。
 
 ## 1. インストール
 
-1. `ScenarioWriterSolo-β5.dmg` を開き、`ScenarioWriterSolo.app` を `Applications` へドラッグします。同じ DMG に見本の作品 `sample.scwd` も入っています。
+1. `ScenarioWriterSolo-β7.dmg` を開き、`ScenarioWriterSolo.app` を `Applications` へドラッグします。同じ DMG に見本の作品 `sample.scwd` も入っています。
 2. 最初に起動するとき「開発元を確認できないため開けません」と出たら、Finder でアプリを右クリック →「開く」を選びます（署名していないため一度だけ必要です）。
 3. macOS 15 以降の Mac（Apple Silicon / Intel）で動きます。
 

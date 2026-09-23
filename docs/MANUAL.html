@@ -12,10 +12,10 @@ figure { margin: 10px 0; page-break-inside: avoid; }
 img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
 li { margin: 2px 0; }
 </style></head><body><h1>ScenarioWriterSolo（Mac 版）マニュアル</h1>
-<p>β5　2026 年 9 月</p>
+<p>β7　2026 年 9 月</p>
 <p>ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。Web 版 ScenarioWriterCafe と同じ考え方で、PHP も Web サーバもログインも要りません。縦書きでの編集ができ、作品ファイル（<code>タイトル.scwd</code>）は Windows 版と共通です。</p>
 <h2>1. インストール</h2>
-<ol><li><code>ScenarioWriterSolo-β5.dmg</code> を開き、<code>ScenarioWriterSolo.app</code> を <code>Applications</code> へドラッグします。同じ DMG に見本の作品 <code>sample.scwd</code> も入っています。</li><li>最初に起動するとき「開発元を確認できないため開けません」と出たら、Finder でアプリを右クリック →「開く」を選びます（署名していないため一度だけ必要です）。</li><li>macOS 15 以降の Mac（Apple Silicon / Intel）で動きます。</li></ol>
+<ol><li><code>ScenarioWriterSolo-β7.dmg</code> を開き、<code>ScenarioWriterSolo.app</code> を <code>Applications</code> へドラッグします。同じ DMG に見本の作品 <code>sample.scwd</code> も入っています。</li><li>最初に起動するとき「開発元を確認できないため開けません」と出たら、Finder でアプリを右クリック →「開く」を選びます（署名していないため一度だけ必要です）。</li><li>macOS 15 以降の Mac（Apple Silicon / Intel）で動きます。</li></ol>
 <h2>2. 作品ファイルと保存</h2>
 <figure><img src="img/manual/select.png" alt="作品を選ぶ（サイドバーが最近使った作品の一覧に変わる）"></figure>
 <ul><li>作品は 1 つずつ <code>タイトル.scwd</code> というファイルです。中身は文字（JSON）で、Windows 版 ScenarioWriterSolo と相互に持ち運べます。</li><li>ふつうの書類アプリと同じで、「ファイル › 開く…」（⌘O）で開き、「新規シナリオ…」（⌘N）では保存先を聞かれます。編集はアプリ内の作業用コピーに自動で書かれ、<b>保存（⌘S）で本ファイルへ書き戻します</b>。</li><li>未保存の変更があるとウインドウの閉じるボタンに点が付き、閉じる・終了・別の作品を開くときに「保存 / 保存しない / キャンセル」を聞きます。保存せずに落ちても、次回起動時に回復を提案します。</li><li>「別名で保存…」（⇧⌘S）「複製を保存…」「最後に保存した状態に戻す」「ゴミ箱に入れる…」「Finder で表示」もファイルメニューにあります。</li><li>起動すると前回開いていた作品がそのまま開きます。サイドバー上の「作品を選ぶ」（⇧⌘O）で最近使った作品の一覧に戻れます。</li><li>β5 より前の <code>.scwd</code>（SQLite 形式）も開けて、保存すると新しい形式になります。たくさんあるときは「ファイル › 旧形式（SQLite）の作品ファイルをまとめて変換…」でフォルダごと変換できます（元のファイルは「旧形式」フォルダに残ります）。Windows 版は新しい形式だけを読みます。</li></ul>

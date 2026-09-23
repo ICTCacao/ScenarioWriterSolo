@@ -78,6 +78,13 @@ button.icon:hover { color: var(--text); background: var(--sel); }
 .line select { border: 1px solid #cfcac0; border-radius: 6px; background: #fff; padding: 2px 4px; max-width: 100%; }
 .line select.type { width: 120px; }
 .line select.chara { width: 120px; font-weight: bold; }
+/* 閉じている見出し: 人物名（またはアイコン）。クリックで種別・人物の選択ボックス */
+.line button.hlabel { border: 0; background: transparent; padding: 3px 6px; border-radius: 6px; display: flex; gap: 4px; align-items: center; cursor: pointer; }
+.line button.hlabel:hover { background: var(--sel); }
+.line button.hlabel .nm { font-weight: bold; white-space: nowrap; }
+.line button.hlabel .nm.none { color: var(--muted); font-weight: normal; }
+.line button.hlabel .ab { font-size: 11px; }
+.line button.hlabel svg { display: block; }
 .line .abbr { font-size: 11px; color: var(--muted); height: 22px; line-height: 22px; }
 .line .menu { border: 0; background: transparent; color: #bbb; padding: 0 4px; width: 24px; }
 .line:hover .menu, .line.sel .menu { color: var(--muted); }
@@ -86,12 +93,18 @@ button.icon:hover { color: var(--text); background: var(--sel); }
 /* 横書き: 左に見出し、右に本文 */
 .lines.horizontal .line { display: flex; gap: 10px; align-items: flex-start; border-bottom: 1px solid var(--line); border-radius: 0; }
 .lines.horizontal .line .hd { flex-direction: column; align-items: flex-start; width: 170px; flex: 0 0 170px; }
+.lines.horizontal .line:not(.open) .hd { flex-direction: row; justify-content: space-between; }
 .lines.horizontal .line .kagi { color: var(--muted); padding-top: 6px; }
 .lines.horizontal .line .bd { flex: 1 1 auto; display: flex; align-items: flex-start; }
 .lines.horizontal .line textarea.body { min-height: 1.6em; }
 /* 縦書き: 上に見出し、下に本文。列は右から左 */
-.lines.vertical .line { display: flex; flex-direction: column; align-items: flex-end; min-width: 148px; height: 100%; }
-.lines.vertical .line .hd { flex-direction: column; align-items: flex-end; }
+.lines.vertical .line { display: flex; flex-direction: column; align-items: flex-end; height: 100%; }
+/* 選択ボックスを開いた列だけ広げる。閉じているときは人物名を縦書きで出し、列は本文の幅まで細く */
+.lines.vertical .line.open { min-width: 148px; }
+/* 見出しは縮めない（本文が列の高さを超えると、縮められて見出しが消えた） */
+.lines.vertical .line .hd { flex-direction: column; align-items: flex-end; flex: 0 0 56px; height: 56px; }
+.lines.vertical .line button.hlabel { flex-direction: column; padding: 2px; max-height: 56px; }
+.lines.vertical .line button.hlabel .nm { writing-mode: vertical-rl; text-orientation: mixed; }
 .lines.vertical .line .bd { display: flex; flex-direction: column; align-items: flex-end; }
 .lines.vertical .line textarea.body { writing-mode: vertical-rl; text-orientation: mixed; min-width: 1.6em; }
 .lines .add-col { display: flex; align-items: flex-start; padding: 8px; }
