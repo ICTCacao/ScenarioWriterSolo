@@ -22,7 +22,9 @@
 		904B56546813B160CC36049C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91ED18A0E69751F0C2455B36 /* ContentView.swift */; };
 		9E34EFD9310A02C15FBB27ED /* EditorMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490AB67B7E6B1F38B2967FDF /* EditorMetrics.swift */; };
 		CAE3CEA977C52DAD38E05302 /* SynopsisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFB9EDB67ADCF6DCF20D48B /* SynopsisView.swift */; };
+		D61B0003A39EE8B9F5EC3E60 /* MinimapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC631EDD52B8A8AB343B3C29 /* MinimapView.swift */; };
 		DC701A8FFEC7A2F8F32E26BC /* ScenesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D5BA23651446A6B08518A /* ScenesView.swift */; };
+		E2967EBB40C90245B5FA50B7 /* StageCurtainIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE51AC390C4DF5AE751F5D6 /* StageCurtainIcon.swift */; };
 		E375F451EEE7CCE9CB848805 /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D8060E4C75A1BAE75150D7 /* ScriptEditorView.swift */; };
 		ED89B7C455340BED27B8FA84 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AAF3F1483120E3E8297FB1 /* SettingsView.swift */; };
 		F02DA8DEDFB1A5C34016D5C7 /* LineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C8B2794951A623EAE0DAEE /* LineTextView.swift */; };
@@ -46,6 +48,8 @@
 		90C8B2794951A623EAE0DAEE /* LineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineTextView.swift; sourceTree = "<group>"; };
 		91ED18A0E69751F0C2455B36 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9BFA7F1A7D54E22C9B3842DD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		9DE51AC390C4DF5AE751F5D6 /* StageCurtainIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageCurtainIcon.swift; sourceTree = "<group>"; };
+		AC631EDD52B8A8AB343B3C29 /* MinimapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapView.swift; sourceTree = "<group>"; };
 		B5D8060E4C75A1BAE75150D7 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
 		C32387731ABCDDD5A92ED534 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		C9608C1FDEC67D362C8EE5CE /* ScenarioWriterSolo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScenarioWriterSolo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,11 +130,13 @@
 				87186BCC2DD23B69C9001967 /* FindReplaceView.swift */,
 				894EF43FD33F8ADA7C97C245 /* InfoView.swift */,
 				90C8B2794951A623EAE0DAEE /* LineTextView.swift */,
+				AC631EDD52B8A8AB343B3C29 /* MinimapView.swift */,
 				F406A996A82E0EF4224C8882 /* NewScenarioSheet.swift */,
 				18A85F819B2F24E6927A981A /* ReaderView.swift */,
 				1F7D5BA23651446A6B08518A /* ScenesView.swift */,
 				B5D8060E4C75A1BAE75150D7 /* ScriptEditorView.swift */,
 				03AAF3F1483120E3E8297FB1 /* SettingsView.swift */,
+				9DE51AC390C4DF5AE751F5D6 /* StageCurtainIcon.swift */,
 				EBFB9EDB67ADCF6DCF20D48B /* SynopsisView.swift */,
 				3999A752073158368EEC97A6 /* VerticalColumnsView.swift */,
 			);
@@ -223,6 +229,7 @@
 				F240E9028C43AA5CDFEFA861 /* FindReplaceView.swift in Sources */,
 				04E54C84C20A6219FB4E12B5 /* InfoView.swift in Sources */,
 				F02DA8DEDFB1A5C34016D5C7 /* LineTextView.swift in Sources */,
+				D61B0003A39EE8B9F5EC3E60 /* MinimapView.swift in Sources */,
 				17F30C6A80EBD1CA977FAB17 /* NewScenarioSheet.swift in Sources */,
 				893905A910E228F5D08F6A2D /* ReaderView.swift in Sources */,
 				F9603C755A1C89B1D6075A5C /* ScenarioWriterSoloApp.swift in Sources */,
@@ -230,6 +237,7 @@
 				E375F451EEE7CCE9CB848805 /* ScriptEditorView.swift in Sources */,
 				85FC558F85B352EA31EEF4EB /* SelfTest.swift in Sources */,
 				ED89B7C455340BED27B8FA84 /* SettingsView.swift in Sources */,
+				E2967EBB40C90245B5FA50B7 /* StageCurtainIcon.swift in Sources */,
 				CAE3CEA977C52DAD38E05302 /* SynopsisView.swift in Sources */,
 				3EBBAC88BDBF6F4DFF938D8F /* VerticalColumnsView.swift in Sources */,
 			);

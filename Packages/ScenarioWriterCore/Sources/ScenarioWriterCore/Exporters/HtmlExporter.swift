@@ -163,7 +163,15 @@ public enum HtmlExporter {
         .pv-index.open { display: block; }
         .pv-index a { display: block; padding: 8px 12px; color: #222; text-decoration: none; border-bottom: 1px solid #eee; }
         .pv-index a:last-child { border-bottom: 0; }
-        @media print { .pv-bar, .pv-index { display: none !important; } .pv-wrap { padding-top: 0; } }
+        /* 縦書きのページ送り（左 = 次のページ、右 = 前のページ）。端まで来たほうは隠す */
+        .pv-page { display: none; position: fixed; top: calc(50% + var(--pv-bar) / 2); transform: translateY(-50%); z-index: 9; width: 36px; height: 56px; padding: 0; border: 1px solid rgba(0,0,0,.12); border-radius: 10px; background: rgba(255,255,255,.85); color: #666; font: 600 22px/1 -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,.15); cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+        .pv-page:hover { background: #fff; color: #222; }
+        .pv-page.next { left: 8px; } .pv-page.prev { right: 8px; }
+        body.vertical .pv-page { display: block; }
+        body.vertical .pv-page.hide { display: none; }
+        /* マウスのある端末では、ポインタが左右の端の列に来たときだけ出す（いつも出ていると本文に重なる）。タッチ端末はいつも出す */
+        @media (hover: hover) { .pv-page { opacity: 0; pointer-events: none; transition: opacity .15s; } .pv-page.near { opacity: 1; pointer-events: auto; } }
+        @media print { .pv-bar, .pv-index, .pv-page { display: none !important; } .pv-wrap { padding-top: 0; } }
         </style>
         </head>
         <body class="\(options.vertical ? "vertical" : "")">
@@ -176,21 +184,92 @@ public enum HtmlExporter {
           </div>
           <div class="pv-body">\(body)</div>
         </div></div></div>
+        <button type="button" class="pv-page next" id="pvNext" title="次のページへ" aria-label="次のページへ">&#x2039;</button>
+        <button type="button" class="pv-page prev" id="pvPrev" title="前のページへ" aria-label="前のページへ">&#x203A;</button>
         <script>
         (function(){
           var body = document.body, modeBtn = document.getElementById('pvMode');
           var fs = \(options.fontSize), vertical = \(options.vertical ? "true" : "false");
           try { fs = parseInt(localStorage.getItem('swpv_fs') || String(fs), 10) || fs; var m = localStorage.getItem('swpv_mode'); if (m) { vertical = m === 'v'; } } catch(e) {}
-          function apply(){
+          // keep: 文字の大きさだけ変えたとき、いま読んでいる位置（見えている範囲の中央）を保つ。向きを変えたときは先頭へ
+          function readPos(){
+            if (vertical) { var t = scroller.scrollWidth || 1; return (t - scroller.scrollLeft - scroller.clientWidth / 2) / t; }
+            var h = document.documentElement.scrollHeight || 1; return (window.pageYOffset + window.innerHeight / 2) / h;
+          }
+          function apply(keep){
+            var pos = keep ? readPos() : null;
             document.documentElement.style.setProperty('--pv-fs', fs + 'px');
             body.classList.toggle('vertical', vertical);
             if (modeBtn) { modeBtn.textContent = vertical ? '横書き' : '縦書き'; modeBtn.classList.toggle('on', vertical); }
             try { localStorage.setItem('swpv_fs', fs); localStorage.setItem('swpv_mode', vertical ? 'v' : 'h'); } catch(e) {}
             try { if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.swPrefs) { window.webkit.messageHandlers.swPrefs.postMessage({ v: vertical, fs: fs }); } } catch(e) {}
-            if (vertical) { var sc = document.querySelector('.pv-scroll'); sc.scrollLeft = sc.scrollWidth; }
+            if (pos !== null) { window.swMapJump(pos); }
+            else if (vertical) { var sc = document.querySelector('.pv-scroll'); sc.scrollLeft = sc.scrollWidth; }
+            updatePager();
+            if (typeof mapReport === 'function') { setTimeout(function(){ mapReport(true); }, 0); }
           }
+          // 縦書きのページ送り。1 ページ = 見えている幅の 85%（前のページの端が少し残る）
+          var scroller = document.querySelector('.pv-scroll'), nextBtn = document.getElementById('pvNext'), prevBtn = document.getElementById('pvPrev');
+          function updatePager(){
+            if (!nextBtn || !prevBtn) { return; }
+            var max = scroller.scrollWidth - scroller.clientWidth;
+            nextBtn.classList.toggle('hide', !vertical || scroller.scrollLeft <= 1);
+            prevBtn.classList.toggle('hide', !vertical || scroller.scrollLeft >= max - 1);
+          }
+          function page(dir){ scroller.scrollBy({ left: dir * Math.max(80, scroller.clientWidth * 0.85), behavior: 'smooth' }); }
+          if (nextBtn) { nextBtn.addEventListener('click', function(){ page(-1); }); }
+          if (prevBtn) { prevBtn.addEventListener('click', function(){ page(1); }); }
+          scroller.addEventListener('scroll', updatePager, { passive: true });
+          window.addEventListener('resize', updatePager);
+          // ポインタが見えている範囲の左右の端（端の列）から 110px 以内に来たら、その側のボタンを出す
+          var ZONE = 110;
+          function nearEdge(x){
+            if (!nextBtn || !prevBtn) { return; }
+            nextBtn.classList.toggle('near', x != null && x < ZONE);
+            prevBtn.classList.toggle('near', x != null && x > window.innerWidth - ZONE);
+          }
+          document.addEventListener('mousemove', function(e){ nearEdge(e.clientY > scroller.getBoundingClientRect().top ? e.clientX : null); }, { passive: true });
+          document.documentElement.addEventListener('mouseleave', function(){ nearEdge(null); });
+          // アプリ（ScenarioWriterSolo の「読む」）のツールバーのミニマップへ、行の並びと見えている範囲を知らせる。
+          // 位置は先頭からの割合（縦書きは右端が先頭）。書き出した HTML では送り先が無いので何もしない
+          function mapHandler(){ try { return window.webkit.messageHandlers.swMap; } catch(e) { return null; } }
+          function mapReport(full){
+            var h = mapHandler(); if (!h) { return; }
+            var msg = { rtl: vertical }, total, lo, hi;
+            if (vertical) {
+              total = scroller.scrollWidth || 1;
+              lo = (total - (scroller.scrollLeft + scroller.clientWidth)) / total; hi = (total - scroller.scrollLeft) / total;
+            } else {
+              total = document.documentElement.scrollHeight || 1;
+              lo = window.pageYOffset / total; hi = (window.pageYOffset + window.innerHeight) / total;
+            }
+            msg.lo = lo; msg.hi = hi;
+            if (full) {
+              var marks = [], base = vertical ? scroller.getBoundingClientRect().left - scroller.scrollLeft : -window.pageYOffset;
+              var colH = scroller.clientHeight || 1, rowW = (document.querySelector('.pv-body') || document.body).clientWidth || 1;
+              document.querySelectorAll('.pv-line, h2.pv-hashira').forEach(function(el){
+                var r = el.getBoundingClientRect(), head = el.tagName === 'H2', t = el.querySelector('.pv-text') || el, tr = t.getBoundingClientRect();
+                var pos, len, fill;
+                if (vertical) { var x = r.left - base; pos = (total - (x + r.width)) / total; len = r.width / total; fill = tr.height / colH; }
+                else { pos = (r.top - base) / total; len = r.height / total; fill = tr.width / rowW; }
+                marks.push([pos, len, fill, head ? '' : getComputedStyle(t).color, head ? 1 : 0]);
+              });
+              msg.marks = marks;
+            }
+            try { h.postMessage(msg); } catch(e) {}
+          }
+          var mapPending = false;
+          function mapScroll(){ if (mapPending) { return; } mapPending = true; requestAnimationFrame(function(){ mapPending = false; mapReport(false); }); }
+          scroller.addEventListener('scroll', mapScroll, { passive: true });
+          window.addEventListener('scroll', mapScroll, { passive: true });
+          window.addEventListener('resize', function(){ mapReport(true); });
+          // ミニマップのクリック: 先頭からの割合 f が画面の中央に来るように
+          window.swMapJump = function(f){
+            if (vertical) { var total = scroller.scrollWidth; scroller.scrollLeft = total * (1 - f) - scroller.clientWidth / 2; }
+            else { window.scrollTo(0, document.documentElement.scrollHeight * f - window.innerHeight / 2); }
+          };
           window.swSetVertical = function(v){ vertical = !!v; apply(); };
-          window.swSetFontSize = function(n){ fs = Math.max(10, Math.min(36, n)); apply(); };
+          window.swSetFontSize = function(n){ fs = Math.max(10, Math.min(36, n)); apply(true); };
           window.swJump = function(id){
             var t = document.getElementById(id); if (!t) { return; }
             document.querySelectorAll('.pv-line.hl').forEach(function(e){ e.classList.remove('hl'); });
@@ -200,8 +279,8 @@ public enum HtmlExporter {
           };
           if (modeBtn) { modeBtn.addEventListener('click', function(){ vertical = !vertical; apply(); }); }
           var sm = document.getElementById('pvSmall'), lg = document.getElementById('pvLarge');
-          if (sm) { sm.addEventListener('click', function(){ fs = Math.max(12, fs - 1); apply(); }); }
-          if (lg) { lg.addEventListener('click', function(){ fs = Math.min(28, fs + 1); apply(); }); }
+          if (sm) { sm.addEventListener('click', function(){ fs = Math.max(12, fs - 1); apply(true); }); }
+          if (lg) { lg.addEventListener('click', function(){ fs = Math.min(28, fs + 1); apply(true); }); }
           var idx = document.getElementById('pvIndex'), idxBtn = document.getElementById('pvIdxBtn');
           if (idx && idxBtn) {
             idxBtn.addEventListener('click', function(e){ e.stopPropagation(); idx.classList.toggle('open'); });

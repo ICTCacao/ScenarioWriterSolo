@@ -191,7 +191,13 @@ struct ScenarioNavView: View {
             }
             Section(model.scenario?.title ?? "") {
                 ForEach(EditorSection.allCases) { s in
-                    Label(s.label, systemImage: s.icon).tag(SidebarItem.section(s))
+                    Label {
+                        Text(s.label)
+                    } icon: {
+                        // 場面は劇場の幕（SF Symbols に無いので自前。StageCurtainIcon）
+                        if s == .scenes { Image(nsImage: StageCurtainIcon.sidebar) } else { Image(systemName: s.icon) }
+                    }
+                    .tag(SidebarItem.section(s))
                 }
             }
             Section {
@@ -273,6 +279,22 @@ struct ScenarioCard: View {
 
 struct ScenarioEditorView: View {
     @EnvironmentObject private var model: AppModel
+    @AppStorage("editorVertical") private var editorVertical = false
+    @AppStorage("readerVertical") private var readerVertical = false
+    @AppStorage(EditorFont.sizeKey) private var fontBase = 14.0
+    @AppStorage("readerFontSize") private var readerFontSize = 16
+
+    /// ツールバーの縦書き / 横書きボタンが切り替えるもの。「読む」画面では読む画面の向き、ほかは編集の書き方向
+    private var vertical: Binding<Bool> { model.section == .read ? $readerVertical : $editorVertical }
+
+    /// ツールバーの文字の大きさのスライダー（Windows 版と同じ）。「読む」画面では読む画面の文字の大きさ（A− / A+ と同じ 12〜28）、
+    /// ほかは 設定 › 書式 の「基準サイズ」（10〜28 pt）
+    private var fontSize: Binding<Double> {
+        model.section == .read
+            ? Binding(get: { Double(readerFontSize) }, set: { readerFontSize = Int($0.rounded()) })
+            : $fontBase
+    }
+    private var fontRange: ClosedRange<Double> { model.section == .read ? 12...28 : 10...28 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -288,9 +310,28 @@ struct ScenarioEditorView: View {
             }
         }
         .toolbar {
+            // 全体のどこを見ているか（縦書きの台本と「読む」のとき）
+            ToolbarItem(placement: .principal) { MinimapView() }
+            ToolbarItem(placement: .primaryAction) {
+                HStack(spacing: 4) {
+                    Image(systemName: "textformat.size.smaller").foregroundStyle(.secondary)
+                    Slider(value: fontSize, in: fontRange, step: 1)
+                        .controlSize(.small)
+                        .frame(width: 96)
+                    Image(systemName: "textformat.size.larger").foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 6)
+                .help(model.section == .read ? "「読む」画面の文字の大きさ（\(Int(fontSize.wrappedValue))）" : "編集画面の文字の大きさ（基準サイズ \(Int(fontSize.wrappedValue)) pt）")
+            }
             ToolbarItemGroup(placement: .primaryAction) {
                 Button { model.showFindReplace.toggle() } label: { Label("検索と置換", systemImage: "magnifyingglass") }
                     .help("作品全体の台詞から探す（⌘F）")
+                // Windows 版と同じく、押すと切り替わる先を出す（横書きのときは「縦書き」）
+                Button { vertical.wrappedValue.toggle() } label: {
+                    Label(vertical.wrappedValue ? "横書き" : "縦書き",
+                          systemImage: vertical.wrappedValue ? "text.justify.leading" : "rectangle.split.3x1")
+                }
+                .help(model.section == .read ? "「読む」画面を縦書き / 横書きに切り替える" : "編集画面を縦書き / 横書きに切り替える（⌥⌘T）")
                 Button { model.showExport = true } label: { Label("書き出し", systemImage: "square.and.arrow.up") }
                     .help("テキスト / Word / XML / HTML に書き出す（⌘E）")
             }

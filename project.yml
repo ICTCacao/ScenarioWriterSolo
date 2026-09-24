@@ -40,7 +40,7 @@ targets:
       properties:
         CFBundleDisplayName: ScenarioWriterSolo
         CFBundleName: ScenarioWriterSolo
-        CFBundleShortVersionString: "β7"
+        CFBundleShortVersionString: "β7.5"
         CFBundleVersion: "7"
         LSMinimumSystemVersion: "15.0"
         CFBundleDevelopmentRegion: ja

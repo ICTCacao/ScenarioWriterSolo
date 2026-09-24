@@ -18,7 +18,7 @@ enum EditorSection: String, CaseIterable, Identifiable {
     var icon: String {
         switch self {
         case .script: return "text.quote"
-        case .scenes: return "theatermasks"
+        case .scenes: return "theatermasks"   // サイドバーでは StageCurtainIcon（劇場の幕）を使う
         case .cast: return "person.2"
         case .synopsis: return "doc.text"
         case .info: return "info.circle"
@@ -1329,7 +1329,9 @@ enum EditorFont {
 
     /// スタイルのサイズ（12 が標準）を編集画面の大きさに直す
     static func pointSize(base: Double, styleSize: Int) -> CGFloat {
-        CGFloat(base) + CGFloat(styleSize - 12) * 0.5
+        // 掛け算（「読む」画面・Windows 版と同じ）。スタイルのサイズ 12 が基準サイズそのもの、18 なら 1.5 倍。
+        // 以前は 基準 + (サイズ − 12) × 0.5 の足し算で、基準を大きくするほどスタイルの差が目立たなくなっていた
+        CGFloat(base) * CGFloat(styleSize > 0 ? styleSize : 12) / 12
     }
 
     /// 日本語が使えるフォントファミリーを先頭に、残りを名前順で

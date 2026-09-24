@@ -122,7 +122,15 @@ body.vertical .pv-title { margin-inline-end: 0.4em; }
 .pv-index.open { display: block; }
 .pv-index a { display: block; padding: 8px 12px; color: #222; text-decoration: none; border-bottom: 1px solid #eee; }
 .pv-index a:last-child { border-bottom: 0; }
-@media print { .pv-bar, .pv-index { display: none !important; } .pv-wrap { padding-top: 0; } }
+/* 縦書きのページ送り（左 = 次のページ、右 = 前のページ）。端まで来たほうは隠す（Mac 版と同じ） */
+.pv-page { display: none; position: fixed; top: calc(50% + var(--pv-bar) / 2); transform: translateY(-50%); z-index: 9; width: 36px; height: 56px; padding: 0; border: 1px solid rgba(0,0,0,.12); border-radius: 10px; background: rgba(255,255,255,.85); color: #666; font: 600 22px/1 -apple-system, "Segoe UI", "Yu Gothic UI", sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,.15); cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.pv-page:hover { background: #fff; color: #222; }
+.pv-page.next { left: 8px; } .pv-page.prev { right: 8px; }
+body.vertical .pv-page { display: block; }
+body.vertical .pv-page.hide { display: none; }
+/* マウスのある端末では、ポインタが左右の端の列に来たときだけ出す（いつも出ていると本文に重なる）。タッチ端末はいつも出す */
+@media (hover: hover) { .pv-page { opacity: 0; pointer-events: none; transition: opacity .15s; } .pv-page.near { opacity: 1; pointer-events: auto; } }
+@media print { .pv-bar, .pv-index, .pv-page { display: none !important; } .pv-wrap { padding-top: 0; } }
 </style></head>
 <body class="${opts.vertical ? "vertical" : ""}">
 ${bar}
@@ -134,6 +142,8 @@ ${bar}
   </div>
   <div class="pv-body">${body}</div>
 </div></div></div>
+<button type="button" class="pv-page next" id="pvNext" title="次のページへ" aria-label="次のページへ">&#x2039;</button>
+<button type="button" class="pv-page prev" id="pvPrev" title="前のページへ" aria-label="前のページへ">&#x203A;</button>
 <script>
 (function(){
   var body = document.body, modeBtn = document.getElementById('pvMode');
@@ -145,7 +155,30 @@ ${bar}
     if (modeBtn) { modeBtn.textContent = vertical ? '横書き' : '縦書き'; modeBtn.classList.toggle('on', vertical); }
     try { localStorage.setItem('swpv_fs', fs); localStorage.setItem('swpv_mode', vertical ? 'v' : 'h'); } catch(e) {}
     if (vertical) { var sc = document.querySelector('.pv-scroll'); sc.scrollLeft = sc.scrollWidth; }
+    updatePager();
   }
+  // 縦書きのページ送り。1 ページ = 見えている幅の 85%（前のページの端が少し残る）
+  var scroller = document.querySelector('.pv-scroll'), nextBtn = document.getElementById('pvNext'), prevBtn = document.getElementById('pvPrev');
+  function updatePager(){
+    if (!nextBtn || !prevBtn) { return; }
+    var max = scroller.scrollWidth - scroller.clientWidth;
+    nextBtn.classList.toggle('hide', !vertical || scroller.scrollLeft <= 1);
+    prevBtn.classList.toggle('hide', !vertical || scroller.scrollLeft >= max - 1);
+  }
+  function page(dir){ scroller.scrollBy({ left: dir * Math.max(80, scroller.clientWidth * 0.85), behavior: 'smooth' }); }
+  if (nextBtn) { nextBtn.addEventListener('click', function(){ page(-1); }); }
+  if (prevBtn) { prevBtn.addEventListener('click', function(){ page(1); }); }
+  scroller.addEventListener('scroll', updatePager, { passive: true });
+  window.addEventListener('resize', updatePager);
+  // ポインタが見えている範囲の左右の端（端の列）から 110px 以内に来たら、その側のボタンを出す
+  var ZONE = 110;
+  function nearEdge(x){
+    if (!nextBtn || !prevBtn) { return; }
+    nextBtn.classList.toggle('near', x != null && x < ZONE);
+    prevBtn.classList.toggle('near', x != null && x > window.innerWidth - ZONE);
+  }
+  document.addEventListener('mousemove', function(e){ nearEdge(e.clientY > scroller.getBoundingClientRect().top ? e.clientX : null); }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', function(){ nearEdge(null); });
   window.swJump = function(id){
     var t = document.getElementById(id); if (!t) { return; }
     document.querySelectorAll('.pv-line.hl').forEach(function(e){ e.classList.remove('hl'); });

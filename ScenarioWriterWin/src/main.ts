@@ -35,7 +35,7 @@ function updateTitle() {
   const f = state.file;
   const name = f ? (f.scenario.title || "無題") : "作品を開いていません";
   $("docTitle").textContent = f ? `${name}${state.dirty ? " — 未保存の変更あり（Ctrl+S で保存）" : ""}` : name;
-  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β7）`).catch(() => {});
+  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β7.5）`).catch(() => {});
 }
 
 function markDirty() { if (!state.dirty) { state.dirty = true; updateTitle(); } }

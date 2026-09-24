@@ -14,7 +14,7 @@ struct ScriptEditorView: View {
             Divider()
             if model.scenes.isEmpty {
                 ContentUnavailableView {
-                    Label("場面がありません", systemImage: "theatermasks")
+                    Label { Text("場面がありません") } icon: { Image(nsImage: StageCurtainIcon.large) }
                 } description: {
                     Text("「場面」画面で場面を追加すると台詞を書けます。")
                 } actions: {

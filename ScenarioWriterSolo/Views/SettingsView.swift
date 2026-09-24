@@ -37,7 +37,7 @@ struct FormatSettingsView: View {
                     Text("縦書き").tag(true)
                 }
                 .pickerStyle(.segmented)
-                Text("縦書きでは、行が右から左へ並び、各行の本文は上から下へ書きます。Tab / ⇧Tab のほか ⌘← / ⌘→ で前後の行へ移れます。「読む」画面の縦書き / 横書きはこれとは別に、読む画面のバーで切り替えます。")
+                Text("縦書きでは、行が右から左へ並び、各行の本文は上から下へ書きます。Tab / ⇧Tab のほか ⌘← / ⌘→ で前後の行へ移れます。ツールバーの「縦書き / 横書き」ボタンでも切り替えられます。「読む」画面の縦書き / 横書きはこれとは別で、読む画面のバーか、読む画面を開いているときのツールバーのボタンで切り替えます。")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("編集画面のフォント") {
@@ -68,7 +68,7 @@ struct FormatSettingsView: View {
                         .kerning(kern)
                         .lineSpacing((lineHeight - 1.0) * fontBase)
                 }
-                Text("台本画面の本文欄に使います。基準サイズはスタイルのサイズが 12 のときの大きさで、スタイルごとの差はそのまま反映されます。「読む」画面や書き出しには影響しません。")
+                Text("台本画面の本文欄に使います。基準サイズはスタイルのサイズが 12 のときの大きさで、ほかのサイズはその比率で大きさが決まります（18 なら 1.5 倍）。ツールバーのスライダーでも変えられます。「読む」画面や書き出しには影響しません。")
                     .font(.caption).foregroundStyle(.secondary)
                 Button("編集画面のフォントを既定に戻す") { fontFamily = ""; fontBase = 14; lineHeight = 1.0; kern = 0 }
             }
