@@ -1,4 +1,5 @@
 import XCTest
+import CoreGraphics
 @testable import ScenarioWriterCore
 
 final class CoreTests: XCTestCase {
@@ -145,6 +146,27 @@ final class CoreTests: XCTestCase {
             XCTAssertGreaterThan(data.count, 10_000)
             XCTAssertEqual(data.prefix(2), Data([0x50, 0x4B]))
         }
+        for t in PdfExporter.Template.allCases {
+            let data = try PdfExporter.make(doc, template: t, cover: .init(writerName: "作者", version: "第1稿", address: "住所"))
+            XCTAssertEqual(data.prefix(5), Data("%PDF-".utf8))
+            // 版下用に文字はアウトライン化する（フォントを埋め込まない）
+            let pdf = try XCTUnwrap(CGPDFDocument(CGDataProvider(data: data as CFData)!))
+            XCTAssertGreaterThanOrEqual(pdf.numberOfPages, 3, t.label)
+            for i in 1...pdf.numberOfPages {
+                let res = pdf.page(at: i)!.dictionary!
+                var resources: CGPDFDictionaryRef?
+                var fonts: CGPDFDictionaryRef?
+                if CGPDFDictionaryGetDictionary(res, "Resources", &resources), let resources {
+                    XCTAssertFalse(CGPDFDictionaryGetDictionary(resources, "Font", &fonts), "\(t.label) p.\(i) にフォントがある")
+                }
+            }
+        }
+        // トンボ付き: 仕上がり（TrimBox）は A4、用紙はその外に余白を足した大きさ
+        let tombo = try PdfExporter.make(doc, template: .a4PortraitVertical, cover: .init(), options: .init(trimMarks: true))
+        let tp = try XCTUnwrap(CGPDFDocument(CGDataProvider(data: tombo as CFData)!)?.page(at: 1))
+        XCTAssertEqual(tp.getBoxRect(.trimBox).width, 595.28, accuracy: 0.1)
+        XCTAssertEqual(tp.getBoxRect(.bleedBox).width, 595.28 + PdfExporter.mm(6), accuracy: 0.1)
+        XCTAssertGreaterThan(tp.getBoxRect(.mediaBox).width, tp.getBoxRect(.bleedBox).width)
         let xml = try XmlExporter.make(doc, cover: .init())
         XCTAssertTrue(xml.contains("台本&lt;&amp;&gt;"))
         XCTAssertTrue(xml.contains("<w:br/>"))

@@ -24,7 +24,7 @@ PHP も Web サーバもログインも要りません。アプリを開けば�
 
 ## Windows 版
 
-同じ作品ファイルを読み書きする Windows 版（Tauri）が [ScenarioWriterWin/](ScenarioWriterWin/) にあります。配布物は `dist/ScenarioWriterWin-β7.5-windows.zip`（インストーラ・単体 exe・[マニュアル](ScenarioWriterWin/docs/MANUAL.md)）。版の呼び方は Mac 版と揃えて β7.5（インストーラの内部番号だけ 0.7.5）。
+同じ作品ファイルを読み書きする Windows 版（Tauri）が [ScenarioWriterWin/](ScenarioWriterWin/) にあります。配布物は `dist/ScenarioWriterWin-β8-windows.zip`（インストーラ・単体 exe・[マニュアル](ScenarioWriterWin/docs/MANUAL.md)）。版の呼び方は Mac 版と揃えて β8（インストーラの内部番号だけ 0.8.0）。
 
 ## 画面の流れ
 
@@ -97,7 +97,7 @@ ScenarioWriterCafe/                 # このリポジトリ
     ├── ScenarioStore.swift         # Web 版と同じスキーマの作成・CRUD・複写・検索・取り込み
     ├── TextFormat.swift            # 全角化・禁則処理付き折り返し・和暦（令和対応）
     ├── ScriptFormatter.swift       # 種別（USER STYLE）の解決。画面と全出力で共通
-    ├── Exporters/                  # Text / Docx / Xml / Html、ZIP 書き出し
+    ├── Exporters/                  # Text / Docx / Pdf / Xml / Html、ZIP 書き出し
     └── Resources/                  # Word テンプレート（deerstudio）と XML 断片（Web 版から抽出）
 ```
 

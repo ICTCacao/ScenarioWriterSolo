@@ -12,11 +12,11 @@ figure { margin: 10px 0; page-break-inside: avoid; }
 img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
 li { margin: 2px 0; }
 </style></head><body><h1>ScenarioWriterSolo（Windows 版）マニュアル</h1>
-<p>β7.5　2026 年 9 月</p>
+<p>β8　2026 年 9 月</p>
 <p>ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。この Windows 版は、Mac 版 ScenarioWriterSolo と同じ作品ファイル（<code>タイトル.scwd</code>）を読み書きします。縦書きでの編集が目玉です。</p>
 <h2>1. インストール</h2>
-<ol><li><code>ScenarioWriterWin-β7.5-setup.exe</code> をダブルクリックします。</li><li>「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。</li><li>画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、<code>.scwd</code> ファイルがこのアプリに関連付けられます。</li></ol>
-<p>インストールせずに使うときは <code>ScenarioWriterWin-β7.5-portable.exe</code> をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 <code>.scwd</code> の関連付けはされません）。</p>
+<ol><li><code>ScenarioWriterWin-β8-setup.exe</code> をダブルクリックします。</li><li>「Windows によって PC が保護されました」（SmartScreen）が出たら、「詳細情報」→「実行」を押します（署名していないため一度だけ出ます）。</li><li>画面の案内どおりに進めると、デスクトップとスタートメニューに ScenarioWriterWin ができ、<code>.scwd</code> ファイルがこのアプリに関連付けられます。</li></ol>
+<p>インストールせずに使うときは <code>ScenarioWriterWin-β8-portable.exe</code> をそのまま起動します（Windows 10/11 の WebView2 が入っていれば動きます。この場合 <code>.scwd</code> の関連付けはされません）。</p>
 <p>アンインストールは「設定 › アプリ」から。作品ファイルは消えません。</p>
 <p>配布ファイルに入っている <code>sample.scwd</code> は見本の作品（架空の短い戯曲「夕暮れの谷」）です。まずこれを開いて、画面や Word の書き出しを試してみてください。</p>
 <h2>2. 作品ファイル</h2>
@@ -46,7 +46,7 @@ li { margin: 2px 0; }
 <p>題名・副題・作者名・分類・メモと、この作品の書式（見出し欄の文字数、本文 1 行の文字数、台詞を「」で囲むか）です。書式は作品ファイルに保存されます。</p>
 <h2>9. 読む</h2>
 <figure><img src="img/read.png" alt="読む"></figure>
-<p>台本を通し読みする画面です。Mac 版や Web 版の「劇団員プレビュー」と同じ見た目で、登場人物表・シノプシス・場面ごとの柱と台詞が並びます。上のバーで縦書き / 横書き、文字の大きさを変え、「場面」から場面へ飛べます。縦書きのときは、マウスを画面の左端・右端の列に持っていくとページ送りのボタン（‹ 次のページ / › 前のページ）が出て、見えている幅のおよそ 1 画面ぶん動きます。先頭・最後まで来たほうのボタンは消えます。</p>
+<p>台本を通し読みする画面です。Mac 版や Web 版の「劇団員プレビュー」と同じ見た目で、登場人物表・シノプシス・場面ごとの柱と台詞が並びます。上のバーで縦書き / 横書き、文字の大きさを変え、「場面」から場面へ飛べます。縦書きのときは、マウスを画面の左端・右端の列に持っていくとページ送りのボタン（‹ 次のページ / › 前のページ）が出て、見えている幅の 4/5 ぶん動きます（前のページの最後の列が見えたまま残るので、続きを追えます）。先頭・最後まで来たほうのボタンは消えます。</p>
 <h2>10. スタイル</h2>
 <figure><img src="img/styles.png" alt="スタイル"></figure>
 <p>行の「種別」ごとの見た目です。「設定 › スタイル…」（Ctrl+7）で開き、表の中でそのまま直せます。</p>

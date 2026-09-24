@@ -1149,6 +1149,13 @@ final class AppModel: ObservableObject {
         infoMessage = "Word ファイルを保存しました。"
     }
 
+    func exportPdf(template: DocxExporter.Template, cover: DocxExporter.CoverInfo, options: PdfExporter.Options) {
+        guard let doc = currentDocument() else { return }
+        guard let url = savePanel(name: doc.scenario.title + "_" + template.label.replacingOccurrences(of: " ", with: ""), ext: "pdf", message: "PDF 台本の保存先（文字はアウトライン化されます）") else { return }
+        perform { try PdfExporter.make(doc, template: template, cover: cover, options: options).write(to: url) }
+        infoMessage = "PDF を保存しました。文字はアウトライン化してあるので、そのまま印刷所に入稿できます。"
+    }
+
     func exportXml(cover: DocxExporter.CoverInfo) {
         guard let doc = currentDocument() else { return }
         guard let url = savePanel(name: doc.scenario.title, ext: "xml", message: "Word 2003 XML の保存先") else { return }

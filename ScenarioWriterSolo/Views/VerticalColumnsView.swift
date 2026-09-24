@@ -201,10 +201,10 @@ struct VerticalColumnsView: View {
         return lo...max(lo, totalW - viewport.width)
     }
 
-    /// 1 ページ = 実際に見えている幅（サイドバーの下を除く）の 85%。前のページの端が少し残るので、続きを追いやすい
+    /// 1 ページ = 実際に見えている幅（サイドバーの下を除く）の 4/5。前のページの最後の列（台詞）が見えたまま残るので、続きを追いやすい
     private func page(forward: Bool, totalW: CGFloat) {
         guard viewport.width > 0 else { return }
-        let step = max(80, (viewport.width - offsetDelta) * 0.85)
+        let step = max(80, (viewport.width - offsetDelta) * 0.8)
         let b = scrollBounds(totalW)
         let x = min(b.upperBound, max(b.lowerBound, viewport.minX + (forward ? -step : step)))
         LineTextView.log("scroll: page \(forward ? "next" : "prev") x \(viewport.minX) -> \(x)")

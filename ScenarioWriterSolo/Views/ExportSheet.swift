@@ -14,6 +14,7 @@ struct ExportSheet: View {
     @AppStorage("export.address") private var address = ""
     @AppStorage("export.phone") private var phone = ""
     @AppStorage("export.email") private var email = ""
+    @AppStorage("export.pdfTrimMarks") private var pdfTrimMarks = false
     @State private var writerName = ""
     @State private var useDate = true
     @State private var date = Date()
@@ -45,8 +46,8 @@ struct ExportSheet: View {
                         Button("テキストを保存…") { model.exportText(encoding: encoding, lineEnding: lineEnding) }
                     }
                 }
-                Section("Word（.docx）") {
-                    Text("株式会社 deerstudio 配布の脚本テンプレートを使った Word ファイル。表紙に下の情報が入ります。Word 2007 以降で開けます。")
+                Section("Word（.docx）・PDF") {
+                    Text("Word は株式会社 deerstudio 配布の脚本テンプレートを使ったファイル（Word 2007 以降）。PDF は同じ用紙・書き方で組み、文字をアウトライン化するので印刷所への版下にそのまま使えます。表紙に下の情報が入ります。")
                         .font(.callout).foregroundStyle(.secondary)
                     Picker("用紙・書き方", selection: $templateRaw) {
                         ForEach(DocxExporter.Template.allCases) { t in Text(t.label).tag(t.rawValue) }
@@ -64,7 +65,9 @@ struct ExportSheet: View {
                     TextField("電話番号", text: $phone)
                     TextField("電子メール", text: $email)
                     HStack {
+                        Toggle("PDF にトンボと裁ち落とし（3mm）を付ける", isOn: $pdfTrimMarks).toggleStyle(.checkbox)
                         Spacer()
+                        Button("PDF を保存…") { model.exportPdf(template: template, cover: cover, options: .init(trimMarks: pdfTrimMarks)) }
                         Button("Word を保存…") { model.exportDocx(template: template, cover: cover) }
                     }
                 }

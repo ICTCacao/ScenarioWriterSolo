@@ -6,7 +6,7 @@ Windows 向けの脚本エディタです。画面は HTML / CSS / TypeScript、
 
 縦書きの編集が目玉なので、本文欄は `writing-mode: vertical-rl` の textarea です。日本語 IME もそのまま使えます。
 
-## できること（β7.5）
+## できること（β8）
 
 - 作品ファイルを開く・保存・別名で保存・新規（Ctrl+O / Ctrl+S / Ctrl+Shift+S / Ctrl+N）。`.scwd` をダブルクリックしても開く
 - 台本の編集: 縦書き / 横書き（Ctrl+Alt+T）、種別と登場人物の選択、行の追加（Ctrl+Enter、Shift で上に）・移動（Ctrl+Alt+矢印）・削除、Tab / Shift+Tab で前後の行へ
@@ -40,7 +40,7 @@ Windows 用のインストーラは Windows 機が無くても作れます。
 - **この Mac で作る**（Tauri の実験的なクロスビルド。`brew install nsis llvm`、`rustup target add x86_64-pc-windows-msvc`、`cargo install cargo-xwin` のあと）:
   ```bash
   PATH="/opt/homebrew/opt/llvm/bin:$PATH" npm run tauri build -- --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis
-  # → src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/ScenarioWriterWin_0.7.5_x64-setup.exe（dist では ScenarioWriterWin-β7.5-setup.exe に改名。内部番号は数字しか使えないので 0.7.5）
+  # → src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/ScenarioWriterWin_0.8.0_x64-setup.exe（dist では ScenarioWriterWin-β8-setup.exe に改名。内部番号は数字しか使えないので 0.8.0）
   #   （生の exe は src-tauri/target/x86_64-pc-windows-msvc/release/scenariowriterwin.exe。WebView2 があれば単体で動く）
   ```
   署名はしないので、Windows で最初に開くとき SmartScreen の「詳細情報 → 実行」が要ります。

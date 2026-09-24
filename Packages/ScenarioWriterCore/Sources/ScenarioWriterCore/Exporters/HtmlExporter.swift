@@ -208,7 +208,7 @@ public enum HtmlExporter {
             updatePager();
             if (typeof mapReport === 'function') { setTimeout(function(){ mapReport(true); }, 0); }
           }
-          // 縦書きのページ送り。1 ページ = 見えている幅の 85%（前のページの端が少し残る）
+          // 縦書きのページ送り。1 ページ = 見えている幅の 4/5（前のページの最後の列が見えたまま残る）
           var scroller = document.querySelector('.pv-scroll'), nextBtn = document.getElementById('pvNext'), prevBtn = document.getElementById('pvPrev');
           function updatePager(){
             if (!nextBtn || !prevBtn) { return; }
@@ -216,7 +216,7 @@ public enum HtmlExporter {
             nextBtn.classList.toggle('hide', !vertical || scroller.scrollLeft <= 1);
             prevBtn.classList.toggle('hide', !vertical || scroller.scrollLeft >= max - 1);
           }
-          function page(dir){ scroller.scrollBy({ left: dir * Math.max(80, scroller.clientWidth * 0.85), behavior: 'smooth' }); }
+          function page(dir){ scroller.scrollBy({ left: dir * Math.max(80, scroller.clientWidth * 0.8), behavior: 'smooth' }); }
           if (nextBtn) { nextBtn.addEventListener('click', function(){ page(-1); }); }
           if (prevBtn) { prevBtn.addEventListener('click', function(){ page(1); }); }
           scroller.addEventListener('scroll', updatePager, { passive: true });
