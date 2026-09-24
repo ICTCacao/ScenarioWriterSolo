@@ -28,10 +28,11 @@ struct ContentView: View {
         .navigationSubtitle(model.scenario.map { ($0.subtitle.isEmpty ? ScenarioCategory.label(for: $0.category) : $0.subtitle) + (model.isDirty ? "　— 未保存の変更あり（⌘S で保存）" : "") } ?? "")
         .sheet(isPresented: $model.showNewScenario) { NewScenarioSheet() }
         .sheet(isPresented: $model.showExport) { ExportSheet() }
-        .alert("エラー", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
+        // 書き出し画面を開いている間の知らせは、書き出し画面の上に出す（ExportSheet）。ここで出そうとすると閉じるまで出ない
+        .alert("エラー", isPresented: Binding(get: { model.errorMessage != nil && !model.showExport }, set: { if !$0 { model.errorMessage = nil } })) {
             Button("OK") { model.errorMessage = nil }
         } message: { Text(model.errorMessage ?? "") }
-        .alert("完了", isPresented: Binding(get: { model.infoMessage != nil }, set: { if !$0 { model.infoMessage = nil } })) {
+        .alert("完了", isPresented: Binding(get: { model.infoMessage != nil && !model.showExport }, set: { if !$0 { model.infoMessage = nil } })) {
             Button("OK") { model.infoMessage = nil }
         } message: { Text(model.infoMessage ?? "") }
         .confirmationDialog("「\(model.scenario?.title ?? "")」を削除しますか？", isPresented: $model.confirmDeleteScenario, titleVisibility: .visible) {

@@ -1,5 +1,6 @@
 import XCTest
 import CoreGraphics
+import CoreText
 @testable import ScenarioWriterCore
 
 final class CoreTests: XCTestCase {
@@ -173,6 +174,77 @@ final class CoreTests: XCTestCase {
         let html = HtmlExporter.make(doc)
         XCTAssertTrue(html.contains("「おはよう」"))
         XCTAssertTrue(html.contains("margin-inline-start:3em;inline-size:29em"))
+    }
+
+    /// PDF の 1 行は「人物名欄 characterLength 字 ＋ 本文 bodyLength 字」で折り返す（字下げは本文に含める）
+    func testPdfLineLengthFollowsSetting() throws {
+        let sc = Scenario(id: 1, title: "字数")
+        let line1 = ScriptLine(id: 1, scenarioId: 1, sceneId: 1, type: 1, characterId: 1, text: String(repeating: "あ", count: 50))
+        let line2 = ScriptLine(id: 2, scenarioId: 1, sceneId: 1, type: 2, text: String(repeating: "い", count: 50))
+        for t in PdfExporter.Template.allCases {
+            let doc = ScenarioDocument(scenario: sc, synopsis: "", characters: [CastMember(id: 1, scenarioId: 1, orderNo: 100, name: "太郎", chara: "")],
+                                       scenes: [ScriptScene(id: 1, scenarioId: 1, orderNo: 100, name: "一")], linesByScene: [1: [line1, line2]],
+                                       styles: [], setting: OptionSetting(characterLength: 6, bodyLength: 20, useKagikakko: false))
+            let page = PdfExporter.Page.of(t)
+            let body = try XCTUnwrap(PdfExporter.buildSections(doc, page: page, cover: .init()).last)
+            let fs = CTFramesetterCreateWithAttributedString(body.text as CFAttributedString)
+            let frame = CTFramesetterCreateFrame(fs, CFRange(location: 0, length: 0), CGPath(rect: page.body, transform: nil),
+                [kCTFrameProgressionAttributeName: (page.vertical ? CTFrameProgression.rightToLeft : .topToBottom).rawValue] as CFDictionary)
+            let str = body.text.string as NSString
+            let lines = (CTFrameGetLines(frame) as! [CTLine]).map { l -> String in
+                let r = CTLineGetStringRange(l)
+                return str.substring(with: NSRange(location: r.location, length: r.length)).trimmingCharacters(in: .newlines)
+            }
+            // 台詞: 人物名欄 6 字（太郎＋空白 4）＋本文 20 字 → あ 20 / 20 / 10
+            let a = lines.filter { $0.contains("あ") }
+            XCTAssertEqual(a.map { $0.filter { $0 == "あ" }.count }, [20, 20, 10], t.label)
+            XCTAssertTrue(a[0].hasPrefix("太郎　　　　あ"), t.label)
+            // ト書（字下げ 3）: 6 ＋ 3 字下げ ＋ 17 字
+            XCTAssertEqual(lines.filter { $0.contains("い") }.map { $0.filter { $0 == "い" }.count }, [17, 17, 16], t.label)
+            // 2 行目以降は人物名欄（＋字下げ）の下から始まる（縦書きは下へ、横書きは右へずれる）
+            let origins = PdfExporter.lineOrigins(frame, in: page.body, text: body.text, vertical: page.vertical)
+            let idx = lines.indices.filter { lines[$0].contains("あ") }
+            let jdx = lines.indices.filter { lines[$0].contains("い") }
+            let em = body.text.attribute(NSAttributedString.Key(kCTFontAttributeName as String), at: (str.range(of: "あ")).location, effectiveRange: nil)
+                .map { CTFontGetSize($0 as! CTFont) } ?? 0
+            let shift = { (i: Int) -> CGFloat in page.vertical ? origins[idx[0]].y - origins[i].y : origins[i].x - origins[idx[0]].x }
+            XCTAssertEqual(shift(idx[1]), 6 * em, accuracy: 0.01, t.label)
+            XCTAssertEqual(shift(jdx[1]), 9 * em, accuracy: 0.01, t.label)
+        }
+    }
+
+    /// 書き込み欄: 上なら本文ページの行が欄の長さだけ下（横書きは右）から始まり、上 / 下とも 1 行が残りに収まる
+    func testPdfMemoArea() throws {
+        let sc = Scenario(id: 1, title: "欄")
+        let line = ScriptLine(id: 1, scenarioId: 1, sceneId: 1, type: 1, characterId: 1, text: String(repeating: "あ", count: 80))
+        let doc = ScenarioDocument(scenario: sc, synopsis: "", characters: [CastMember(id: 1, scenarioId: 1, orderNo: 100, name: "太郎", chara: "")],
+                                   scenes: [ScriptScene(id: 1, scenarioId: 1, orderNo: 100, name: "一")], linesByScene: [1: [line]],
+                                   styles: [], setting: OptionSetting(characterLength: 8, bodyLength: 32, useKagikakko: false))
+        for t in PdfExporter.Template.allCases {
+            let page = PdfExporter.Page.of(t)
+            var starts: [PdfExporter.MemoArea: CGFloat] = [:]
+            for memo in PdfExporter.MemoArea.allCases {
+                let body = try XCTUnwrap(PdfExporter.buildSections(doc, page: page, cover: .init(), memo: memo).last)
+                XCTAssertEqual(body.memoRule == nil, memo == .none)
+                let fs = CTFramesetterCreateWithAttributedString(body.text as CFAttributedString)
+                let frame = CTFramesetterCreateFrame(fs, CFRange(location: 0, length: 0), CGPath(rect: page.body, transform: nil),
+                    [kCTFrameProgressionAttributeName: (page.vertical ? CTFrameProgression.rightToLeft : .topToBottom).rawValue] as CFDictionary)
+                let lines = CTFrameGetLines(frame) as! [CTLine]
+                let str = body.text.string as NSString
+                let i = try XCTUnwrap(lines.firstIndex { str.substring(with: NSRange(location: CTLineGetStringRange($0).location, length: CTLineGetStringRange($0).length)).contains("あ") })
+                let o = PdfExporter.lineOrigins(frame, in: page.body, text: body.text, vertical: page.vertical)[i]
+                starts[memo] = page.vertical ? page.body.maxY - o.y : o.x - page.body.minX
+                // 台詞の 1 行目は 人物名欄 8 字 ＋ 本文 32 字（残りに収まり、途中で折れない）
+                let r = CTLineGetStringRange(lines[i])
+                XCTAssertEqual(str.substring(with: NSRange(location: r.location, length: r.length)).filter { $0 == "あ" }.count, 32, "\(t.label) \(memo)")
+            }
+            XCTAssertEqual(starts[.top]! - starts[.none]!, PdfExporter.memoLength(page, .top), accuracy: 0.01, t.label)
+            XCTAssertEqual(starts[.bottom]!, starts[.none]!, accuracy: 0.01, t.label)
+            // 下: 罫は 1 行の終わり（8 ＋ 32 字）のすぐ後ろ。台詞とのあいだに空きを作らない
+            let bottom = try XCTUnwrap(PdfExporter.buildSections(doc, page: page, cover: .init(), memo: .bottom).last?.memoRule)
+            let em = bottom / 40.5
+            XCTAssertLessThan(bottom - (starts[.none]! + 40 * em), em, t.label)
+        }
     }
 
     func testImportReadsWal() throws {

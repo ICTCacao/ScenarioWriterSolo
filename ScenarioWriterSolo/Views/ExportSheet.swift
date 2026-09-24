@@ -15,6 +15,7 @@ struct ExportSheet: View {
     @AppStorage("export.phone") private var phone = ""
     @AppStorage("export.email") private var email = ""
     @AppStorage("export.pdfTrimMarks") private var pdfTrimMarks = false
+    @AppStorage("export.pdfMemo") private var pdfMemoRaw = PdfExporter.MemoArea.top.rawValue
     @State private var writerName = ""
     @State private var useDate = true
     @State private var date = Date()
@@ -65,9 +66,17 @@ struct ExportSheet: View {
                     TextField("電話番号", text: $phone)
                     TextField("電子メール", text: $email)
                     HStack {
+                        Picker("PDF の書き込み欄", selection: $pdfMemoRaw) {
+                            ForEach(PdfExporter.MemoArea.allCases) { m in Text(m.label).tag(m.rawValue) }
+                        }
+                        .pickerStyle(.segmented)
+                        .fixedSize()
+                        Text("本文ページの余白と区切りの罫（Word と同じ）。横書きでは上 = 左、下 = 右").font(.caption).foregroundStyle(.secondary)
+                    }
+                    HStack {
                         Toggle("PDF にトンボと裁ち落とし（3mm）を付ける", isOn: $pdfTrimMarks).toggleStyle(.checkbox)
                         Spacer()
-                        Button("PDF を保存…") { model.exportPdf(template: template, cover: cover, options: .init(trimMarks: pdfTrimMarks)) }
+                        Button("PDF を保存…") { model.exportPdf(template: template, cover: cover, options: .init(trimMarks: pdfTrimMarks, memo: PdfExporter.MemoArea(rawValue: pdfMemoRaw) ?? .top)) }
                         Button("Word を保存…") { model.exportDocx(template: template, cover: cover) }
                     }
                 }
@@ -99,6 +108,12 @@ struct ExportSheet: View {
             .padding()
         }
         .frame(width: 640, height: 720)
+        .alert("エラー", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
+            Button("OK") { model.errorMessage = nil }
+        } message: { Text(model.errorMessage ?? "") }
+        .alert("完了", isPresented: Binding(get: { model.infoMessage != nil }, set: { if !$0 { model.infoMessage = nil } })) {
+            Button("OK") { model.infoMessage = nil }
+        } message: { Text(model.infoMessage ?? "") }
         .onAppear { writerName = model.scenario?.writerName ?? "" }
     }
 }
