@@ -52,7 +52,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var isDirty = false {
         didSet {
             if oldValue != isDirty {
-                NSApp.windows.first { $0.isVisible }?.isDocumentEdited = isDirty
+                NSApp?.windows.first { $0.isVisible }?.isDocumentEdited = isDirty
                 writeWorkingState()
             }
         }
@@ -407,7 +407,7 @@ final class AppModel: ObservableObject {
             if resetReading, section == .read { section = .script }
             addRecent(url)
             writeWorkingState()
-            NSApp.windows.first { $0.isVisible }?.representedURL = url
+            NSApp?.windows.first { $0.isVisible }?.representedURL = url
             remember()
         } catch {
             if scoped { url.stopAccessingSecurityScopedResource() }
@@ -436,7 +436,7 @@ final class AppModel: ObservableObject {
         isDirty = false
         selectedScenarioId = nil
         if let u = scopedURL { u.stopAccessingSecurityScopedResource(); scopedURL = nil }
-        NSApp.windows.first { $0.isVisible }?.representedURL = nil
+        NSApp?.windows.first { $0.isVisible }?.representedURL = nil
         browsing = true
         remember()
     }
@@ -552,7 +552,7 @@ final class AppModel: ObservableObject {
         isDirty = false
         writeWorkingState()
         addRecent(dst)
-        NSApp.windows.first { $0.isVisible }?.representedURL = dst
+        NSApp?.windows.first { $0.isVisible }?.representedURL = dst
         infoMessage = "「\(dst.lastPathComponent)」に保存しました。"
     }
 
@@ -691,7 +691,8 @@ final class AppModel: ObservableObject {
     // MARK: - 元に戻す（構造的な操作）
 
     /// ウインドウの UndoManager。本文欄の中の文字入力は欄ごとの別の UndoManager なので、ここには行・場面・人物などの操作だけが積まれる
-    private var undoManager: UndoManager? { NSApp.keyWindow?.undoManager ?? NSApp.mainWindow?.undoManager ?? NSApp.windows.first?.undoManager }
+    /// NSApp は macOS 14 では AppModel.init（StateObject の生成）の時点でまだ nil。NSApp. で触ると落ちるので NSApp?. で
+    private var undoManager: UndoManager? { NSApp?.keyWindow?.undoManager ?? NSApp?.mainWindow?.undoManager ?? NSApp?.windows.first?.undoManager }
 
     private func registerUndo(_ name: String, _ handler: @escaping (AppModel) -> Void) {
         guard let um = undoManager else { return }
