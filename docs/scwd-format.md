@@ -152,3 +152,4 @@ Mac 版の実装は `Packages/ScenarioWriterCore/Sources/ScenarioWriterCore/Scen
 
 - β5 より前の `.scwd` は SQLite（Web 版 ScenarioWriterCafe と同じ表）だった。Mac 版は先頭 16 バイトが `SQLite format 3` なら旧形式として開き、保存すると JSON になる。
 - Web 版からの取り込み（`swdata.sqlite` → 作品ごとの `.scwd`）と Web 版用の書き出し（SQLite）は Mac 版だけの機能。
+- Web 版 ScenarioWriterCafe（標準版・コラボ版）はこの JSON 形式の `.scwd` を読み書きできる。読み込みは `swScenarioImport.php`（シナリオ選択のメニュー「作品ファイル(.scwd)を読み込む」。スタイルはユーザーの設定を上書きせず、無い種別番号だけ追加）、書き出しは `swScenarioDownloadScwd.php`（ダウンロード画面の「作品ファイル.scwd」）。Web 版が書くファイルは `app` が `"ScenarioWriterCafe"`、`styles` は作者のスタイル（`marginBefore`/`marginAfter` は 0）、`textStyles` は書かない。
