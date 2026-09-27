@@ -131,10 +131,15 @@ final class AppModel: ObservableObject {
         // 起動引数 -openFile <パス>（コンテナ内のファイル。動作確認用）
         if let path = d.string(forKey: "openFile"), !path.isEmpty {
             openWork(URL(fileURLWithPath: path), restoreScene: nil, resetReading: false)
-        } else if !recoverUnsavedWorkIfAny() {
-            if let data = d.data(forKey: Self.lastWorkKey), let url = Self.resolve(bookmark: data) {
-                openWork(url, restoreScene: Int64(d.integer(forKey: "lastSceneId")), resetReading: false)
+        } else if hasUnsavedWork() {
+            // 回復の確認（NSAlert.runModal）を init の中で出すと、SwiftUI がシーンを作っている途中でモーダルになり
+            // AttributeGraph の precondition で落ちる（強制終了の後の起動で毎回）。起動が済んでから聞く
+            DispatchQueue.main.async { [weak self] in
+                guard let self, !self.recoverUnsavedWorkIfAny() else { return }
+                self.openLastWork()
             }
+        } else {
+            openLastWork()
         }
         // 起動引数 -focusLine <行ID> で行にフォーカス（動作確認用）
         let fl = Int64(d.integer(forKey: "focusLine"))
@@ -269,6 +274,27 @@ final class AppModel: ObservableObject {
     private func removeWorkingFiles(id: String) {
         let fm = FileManager.default
         for u in [workingURL(for: id), stateURL(for: id), URL(fileURLWithPath: workingURL(for: id).path + "-journal")] { try? fm.removeItem(at: u) }
+    }
+
+    /// 前回開いていた作品を開く
+    private func openLastWork() {
+        let d = UserDefaults.standard
+        if let data = d.data(forKey: Self.lastWorkKey), let url = Self.resolve(bookmark: data) {
+            openWork(url, restoreScene: Int64(d.integer(forKey: "lastSceneId")), resetReading: false)
+        }
+    }
+
+    /// 保存しないまま終わった作業用コピーがあるか（確かめるだけ。片付けや確認は recoverUnsavedWorkIfAny）
+    private func hasUnsavedWork() -> Bool {
+        let fm = FileManager.default
+        guard let names = try? fm.contentsOfDirectory(atPath: Self.workDirectory.path) else { return false }
+        return names.contains { n in
+            guard n.hasSuffix(".json") else { return false }
+            let id = String(n.dropLast(5))
+            guard let data = try? Data(contentsOf: stateURL(for: id)),
+                  let st = try? JSONDecoder().decode(WorkingState.self, from: data) else { return false }
+            return st.dirty && fm.fileExists(atPath: workingURL(for: id).path)
+        }
     }
 
     /// 起動時: 前回、保存しないまま終わった作業用コピーがあれば回復を提案する。回復して開いたら true

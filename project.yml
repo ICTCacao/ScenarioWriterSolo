@@ -2,7 +2,7 @@ name: ScenarioWriterSolo
 options:
   bundleIdPrefix: com.ictcacao
   deploymentTarget:
-    macOS: "15.0"
+    macOS: "14.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
 
@@ -13,7 +13,7 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
     DEVELOPMENT_TEAM: ""
@@ -42,7 +42,7 @@ targets:
         CFBundleName: ScenarioWriterSolo
         CFBundleShortVersionString: "β8"
         CFBundleVersion: "8"
-        LSMinimumSystemVersion: "15.0"
+        LSMinimumSystemVersion: "14.0"
         CFBundleDevelopmentRegion: ja
         CFBundleLocalizations: [ja]
         LSApplicationCategoryType: public.app-category.productivity

@@ -6,7 +6,7 @@ PHP も Web サーバもログインも要りません。アプリを開けば�
 
 | | Web 版 ScenarioWriterCafe | **ScenarioWriterSolo** |
 |---|---|---|
-| 動く場所 | レンタルサーバ / ローカルの PHP | macOS 15 以降の Mac（Apple Silicon / Intel） |
+| 動く場所 | レンタルサーバ / ローカルの PHP | macOS 14 以降の Mac（Apple Silicon / Intel） |
 | 必要なもの | PHP 7.4+、ブラウザ | なし |
 | データ | `sw_config/swdata.sqlite`（SQLite） | 1 作品 1 ファイルの `タイトル.scwd`（JSON。[形式の説明](docs/scwd-format.md)。Web 版からの取り込みと Web 版用の書き出しあり） |
 | 仲間に読んでもらう | 劇団員プレビュー（鍵付き URL） | HTML 1 ファイルを書き出して送る |
@@ -105,7 +105,7 @@ Web 版の `SW_SCENARIO_LINES.SCENARIO_LINES` などは改行を `<br>` で持�
 
 ## ビルド
 
-必要: macOS 15 以降、Xcode 26 以降、XcodeGen（`brew install xcodegen`）。
+必要: macOS 15 以降（作るのに。動くのは macOS 14 以降）、Xcode 26 以降、XcodeGen（`brew install xcodegen`）。
 
 ```bash
 cd ~/CacaoApps/ScenarioWriterCafe

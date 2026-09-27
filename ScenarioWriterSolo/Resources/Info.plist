@@ -42,7 +42,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>15.0</string>
+	<string>14.0</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 ICTCacao</string>
 	<key>UTExportedTypeDeclarations</key>

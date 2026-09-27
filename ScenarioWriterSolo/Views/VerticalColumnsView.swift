@@ -34,6 +34,9 @@ struct VerticalColumnsView: View {
     static let rowPadding: CGFloat = 6
     static let spacing: CGFloat = 4
     static let sidePad: CGFloat = 12
+    /// 右端（先頭の行）のさらに右に空ける列の数。右端の列が窓の端やページ送りのボタンに隠れないよう、
+    /// そこまでスクロールできるようにしておく
+    static let trailingColumns: CGFloat = 5
     static let topPad: CGFloat = 8
     static let addColumnW: CGFloat = 100
     /// 見えている範囲の外側にこれだけ余分に作っておく（スクロール中に白く抜けないように）
@@ -48,7 +51,7 @@ struct VerticalColumnsView: View {
     /// サイドバーの幅ぶんあり、visibleRect はその余白を含めて数える（左端で minX = −280）が、scrollTo(x:) の x は
     /// 余白の内側から数える。そのまま渡すと ⌘⏎ のたびに約 280pt 左へ飛んだ
     @State private var offsetDelta: CGFloat = 0
-    @State private var scrollPos = ScrollPosition(edge: .trailing)
+    @StateObject private var scroller = HScrollController()
     @State private var refreshTask: Task<Void, Never>?
     /// viewport の大きさが決まる前に来たスクロール要求（行 ID。0 = 先頭）
     @State private var pendingScroll: Int64?
@@ -74,8 +77,8 @@ struct VerticalColumnsView: View {
             l.widths.append(w)
             used += w + Self.spacing
         }
-        l.totalW = Self.sidePad + Self.addColumnW + Self.spacing + used + Self.sidePad
-        var x = l.totalW - Self.sidePad
+        l.totalW = Self.sidePad + Self.addColumnW + Self.spacing + used + trailingPad
+        var x = l.totalW - trailingPad
         for w in l.widths { x -= w; l.lefts.append(x); x -= Self.spacing }
         return l
     }
@@ -90,6 +93,12 @@ struct VerticalColumnsView: View {
         var lo2 = lo, hi2 = count
         while lo2 < hi2 { let m = (lo2 + hi2) / 2; if l.lefts[m] < x0 { hi2 = m } else { lo2 = m + 1 } }
         return lo..<max(lo, lo2)
+    }
+
+    /// 右端の余白。1 行ぶんの列（本文 1 行＋余白・間隔）× trailingColumns。文字の大きさに合わせて広がる
+    private var trailingPad: CGFloat {
+        let column = CGFloat(fontBase * lineHeight) * 1.6 + Self.rowPadding * 2 + Self.spacing
+        return max(Self.sidePad, column * Self.trailingColumns)
     }
 
     /// 列の幅 = max(見出し幅, 本文幅) + 余白。見出しは選択ボックスを開いている行だけ広い
@@ -127,8 +136,9 @@ struct VerticalColumnsView: View {
                         .offset(x: Self.sidePad + Self.addColumnW + Self.spacing, y: Self.topPad)
                 }
             }
+            .hScrollProbe(scroller, insets: insetsChanged, visible: viewportChanged)
         }
-        .scrollPosition($scrollPos)
+        .hScrollTracking(scroller, insets: insetsChanged, visible: viewportChanged)
         // 左右のページ送り（Web ページの「次へ」のような ‹ › ）。左が先（次のページ）、右が前。
         // いつも出ていると本文に重なって読みにくいので、マウスが端の列に来たときだけ出す
         .overlay(alignment: .leading) { pageButton(forward: true, totalW: layout.totalW) }
@@ -141,16 +151,6 @@ struct VerticalColumnsView: View {
                 else if p.x > viewport.width - offsetDelta - Self.pageHoverZone { edge = .trailing }
             }
             if edge != hoverEdge { withAnimation(.easeOut(duration: 0.15)) { hoverEdge = edge } }
-        }
-        .onScrollGeometryChange(for: CGFloat.self) { $0.contentInsets.leading } action: { _, d in
-            if d != offsetDelta { LineTextView.log("scroll: offsetDelta \(offsetDelta) -> \(d)"); offsetDelta = d }
-        }
-        .onScrollGeometryChange(for: CGRect.self) { $0.visibleRect } action: { _, new in
-            if new != viewport {
-                if abs(new.minX - viewport.minX) > 20 { LineTextView.log("scroll: viewport minX \(viewport.minX) -> \(new.minX) w=\(new.width)") }
-                viewport = new
-            }
-            if let p = pendingScroll, new.width > 0 { pendingScroll = nil; scroll(toLine: p, in: model.lines, animated: false) }
         }
         .onPreferenceChange(VerticalTextWidthKey.self) { measured in
             // 本文欄の実測幅（列幅は columnWidth で見出し幅・余白を足す）
@@ -179,7 +179,8 @@ struct VerticalColumnsView: View {
         .onChange(of: layout.totalW) { old, new in
             // 内容の幅が変わっても右端からの距離を保つ（右から左へ読むので、右端基準のほうが自然）。
             // 左端までスクロールしているとき（場面の最後を書いているとき）も保つ。保たないと ⌘⏎ で列が増えるたびに本文が右へずれる
-            guard old > 0, viewport.width > 0 else { return }
+            // macOS 14 の道では ScrollProbeView が文書ビューの幅の変わり目でする
+            guard old > 0, viewport.width > 0, !HScrollController.legacy else { return }
             let fromRight = old - viewport.maxX
             let x = max(0, min(new - viewport.width, new - fromRight - viewport.width))
             LineTextView.log("scroll: totalW \(old) -> \(new) keepRight x \(viewport.minX) -> \(x)")
@@ -195,6 +196,18 @@ struct VerticalColumnsView: View {
         }
     }
 
+    private func insetsChanged(_ d: CGFloat) {
+        if d != offsetDelta { LineTextView.log("scroll: offsetDelta \(offsetDelta) -> \(d)"); offsetDelta = d }
+    }
+
+    private func viewportChanged(_ new: CGRect) {
+        if new != viewport {
+            if abs(new.minX - viewport.minX) > 20 { LineTextView.log("scroll: viewport minX \(viewport.minX) -> \(new.minX) w=\(new.width)") }
+            viewport = new
+        }
+        if let p = pendingScroll, new.width > 0 { pendingScroll = nil; scroll(toLine: p, in: model.lines, animated: false) }
+    }
+
     /// 見えている範囲の左端（visibleRect.minX）の動ける範囲。左の余白（サイドバーの下）は数えない
     private func scrollBounds(_ totalW: CGFloat) -> ClosedRange<CGFloat> {
         let lo = -offsetDelta
@@ -208,7 +221,7 @@ struct VerticalColumnsView: View {
         let b = scrollBounds(totalW)
         let x = min(b.upperBound, max(b.lowerBound, viewport.minX + (forward ? -step : step)))
         LineTextView.log("scroll: page \(forward ? "next" : "prev") x \(viewport.minX) -> \(x)")
-        withAnimation(.easeInOut(duration: 0.25)) { scrollTo(visibleX: x) }
+        scrollTo(visibleX: x, animation: .easeInOut(duration: 0.25))
     }
 
     @ViewBuilder
@@ -295,12 +308,12 @@ struct VerticalColumnsView: View {
             return
         }
         let clamped = max(0, min(l.totalW - viewport.width, x))
-        withAnimation(.easeOut(duration: 0.15)) { scrollTo(visibleX: clamped) }
+        scrollTo(visibleX: clamped, animation: .easeOut(duration: 0.15))
     }
 
     /// 見えている範囲の左端（visibleRect.minX）を x にする
-    private func scrollTo(visibleX x: CGFloat) {
-        scrollPos.scrollTo(x: x + offsetDelta)
+    private func scrollTo(visibleX x: CGFloat, animation: Animation? = nil) {
+        scroller.scroll(visibleX: x, offsetDelta: offsetDelta, animation: animation)
     }
 
     private var fontSignature: String { "\(fontFamily)/\(fontBase)/\(lineHeight)/\(kern)" }
@@ -361,9 +374,9 @@ struct VerticalColumnsView: View {
     private func scroll(toLine id: Int64, in lines: [ScriptLine], animated: Bool) {
         LineTextView.log("scroll: toLine id=\(id) animated=\(animated)")
         guard viewport.width > 0 else { pendingScroll = id; return }
-        guard id != 0, let i = lines.firstIndex(where: { $0.id == id }) else { scrollPos.scrollTo(edge: .trailing); return }
+        guard id != 0, let i = lines.firstIndex(where: { $0.id == id }) else { scroller.scrollToTrailing(); return }
         let l = makeLayout(lines)
         let x = max(0, min(l.totalW - viewport.width, l.lefts[i] + l.widths[i] / 2 - viewport.width / 2))
-        if animated { withAnimation { scrollTo(visibleX: x) } } else { scrollTo(visibleX: x) }
+        scrollTo(visibleX: x, animation: animated ? .default : nil)
     }
 }

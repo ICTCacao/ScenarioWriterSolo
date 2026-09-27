@@ -8,7 +8,7 @@ ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用�
 
 1. `ScenarioWriterSolo-β8.dmg` を開き、`ScenarioWriterSolo.app` を `Applications` へドラッグします。同じ DMG に見本の作品 `sample.scwd` も入っています。
 2. 最初に起動するとき「開発元を確認できないため開けません」と出たら、Finder でアプリを右クリック →「開く」を選びます（署名していないため一度だけ必要です）。
-3. macOS 15 以降の Mac（Apple Silicon / Intel）で動きます。
+3. macOS 14 以降の Mac（Apple Silicon / Intel）で動きます。
 
 ## 2. 作品ファイルと保存
 
