@@ -1169,10 +1169,10 @@ final class AppModel: ObservableObject {
         infoMessage = "テキストを保存しました。"
     }
 
-    func exportDocx(template: DocxExporter.Template, cover: DocxExporter.CoverInfo) {
+    func exportDocx(template: DocxExporter.Template, cover: DocxExporter.CoverInfo, memo: DocxExporter.MemoArea) {
         guard let doc = currentDocument() else { return }
         guard let url = savePanel(name: doc.scenario.title + "_" + template.label.replacingOccurrences(of: " ", with: ""), ext: "docx", message: "Word 台本の保存先") else { return }
-        perform { try DocxExporter.make(doc, template: template, cover: cover, userName: userName).write(to: url) }
+        perform { try DocxExporter.make(doc, template: template, cover: cover, userName: userName, memo: memo).write(to: url) }
         infoMessage = "Word ファイルを保存しました。"
     }
 

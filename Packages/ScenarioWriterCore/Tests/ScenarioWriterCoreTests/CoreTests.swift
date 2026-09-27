@@ -247,6 +247,36 @@ final class CoreTests: XCTestCase {
         }
     }
 
+    /// Word の書き込み欄: 上はテンプレートのまま、下は台詞の罫を行末側へ（A4縦 縦書きはページ罫線も下へ）、なしは罫を外す
+    func testDocxMemoArea() throws {
+        let sc = Scenario(id: 1, title: "欄")
+        let doc = ScenarioDocument(scenario: sc, synopsis: "", characters: [CastMember(id: 1, scenarioId: 1, orderNo: 100, name: "太郎", chara: "")],
+                                   scenes: [ScriptScene(id: 1, scenarioId: 1, orderNo: 100, name: "一")],
+                                   linesByScene: [1: [ScriptLine(id: 1, scenarioId: 1, sceneId: 1, type: 1, characterId: 1, text: "あ"),
+                                                      ScriptLine(id: 2, scenarioId: 1, sceneId: 1, type: 2, text: "い")]],
+                                   styles: [], setting: OptionSetting())
+        for t in DocxExporter.Template.allCases {
+            let top = try DocxExporter.buildDocumentXML(doc, template: t, cover: .init())
+            XCTAssertEqual(try DocxExporter.buildDocumentXML(doc, template: t, cover: .init(), memo: .top), top)
+            XCTAssertFalse(top.contains("<w:right w:val=\"single\""), t.label)
+            let bottom = try DocxExporter.buildDocumentXML(doc, template: t, cover: .init(), memo: .bottom)
+            let none = try DocxExporter.buildDocumentXML(doc, template: t, cover: .init(), memo: .none)
+            let shift = DocxExporter.memoTwips(t)
+            XCTAssertTrue(bottom.contains("<w:right w:val=\"single\""), t.label)
+            XCTAssertTrue(bottom.contains("w:right=\"\(shift + (t == .a4PortraitVertical ? 360 : 0))\""), t.label)
+            XCTAssertFalse(none.contains("<w:right w:val=\"single\""), t.label)
+            XCTAssertTrue(none.contains("<w:left w:val=\"nil\"/>"), t.label)
+            for x in [top, bottom, none] {
+                XCTAssertNotNil(try? XMLDocument(xmlString: x), t.label)
+            }
+            if t == .a4PortraitVertical {
+                XCTAssertTrue(top.contains("<w:pgBorders>\n<w:top "))
+                XCTAssertTrue(bottom.contains("<w:pgBorders>\n<w:bottom "))
+                XCTAssertFalse(none.contains("<w:pgBorders>"))
+            }
+        }
+    }
+
     func testImportReadsWal() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("swsolo-wal-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

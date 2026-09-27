@@ -18,6 +18,20 @@ public enum DocxExporter {
         }
     }
 
+    /// 本文ページの書き込み欄（Word テンプレートの台詞の上の余白と区切りの罫）。
+    /// 縦書きは段の上 / 下、横書きは行頭側（左）/ 行末側（右）に取る
+    public enum MemoArea: String, CaseIterable, Identifiable, Sendable {
+        case none, top, bottom
+        public var id: String { rawValue }
+        public var label: String {
+            switch self {
+            case .none: return "なし"
+            case .top: return "上"
+            case .bottom: return "下"
+            }
+        }
+    }
+
     /// 表紙に入れる情報（Web 版ダウンロード画面の入力欄）
     public struct CoverInfo: Sendable {
         public var writerName: String
@@ -67,7 +81,7 @@ public enum DocxExporter {
         return s.replacingOccurrences(of: "<w:t>", with: "<w:t xml:space=\"preserve\">")
     }
 
-    public static func make(_ doc: ScenarioDocument, template: Template, cover: CoverInfo, userName: String) throws -> Data {
+    public static func make(_ doc: ScenarioDocument, template: Template, cover: CoverInfo, userName: String, memo: MemoArea = .top) throws -> Data {
         let root = try resourceRoot.appendingPathComponent("docx/\(template.rawValue)/template", isDirectory: true)
         let fm = FileManager.default
         // 相対パスで列挙する（/tmp と /private/tmp のようにシンボリックリンクで絶対パスが食い違っても ZIP 内のパスが崩れない）
@@ -84,7 +98,7 @@ public enum DocxExporter {
         let titleX = TextFormat.xmlEscape(title)
         let userX = TextFormat.xmlEscape(userName.isEmpty ? "ScenarioWriterSolo" : userName)
         var out = ZipWriter()
-        let document = try buildDocumentXML(doc, template: template, cover: cover)
+        let document = try buildDocumentXML(doc, template: template, cover: cover, memo: memo)
         // ZIP の先頭は [Content_Types].xml にする
         files.sort { a, b in
             if a.0 == "[Content_Types].xml" { return b.0 != "[Content_Types].xml" }
@@ -108,7 +122,7 @@ public enum DocxExporter {
         return out.finish()
     }
 
-    static func buildDocumentXML(_ doc: ScenarioDocument, template: Template, cover: CoverInfo) throws -> String {
+    static func buildDocumentXML(_ doc: ScenarioDocument, template: Template, cover: CoverInfo, memo: MemoArea = .top) throws -> String {
         let chars = doc.characterById
         let styles = doc.styleByType
         let nameW = max(doc.setting.characterLength, 2)
@@ -129,9 +143,9 @@ public enum DocxExporter {
 
         xml += fill(try snippet(template, "synopsis"), ["TITLE": wt(doc.scenario.title), "SYNOPSIS": wt(TextFormat.toFullWidth(doc.synopsis))])
 
-        let sceneSnippet = try snippet(template, "scene")
-        let lineSnippet = try snippet(template, "line")
-        let togakiSnippet = try snippet(template, "togaki")
+        let sceneSnippet = applyMemo(try snippet(template, "scene"), template: template, memo: memo)
+        let lineSnippet = applyMemo(try snippet(template, "line"), template: template, memo: memo)
+        let togakiSnippet = applyMemo(try snippet(template, "togaki"), template: template, memo: memo)
         // 前後の余白は、罫線などの段落書式が続くように「台詞と同じ書式の空行」で入れる（<w:p/> だと罫線が途切れる）
         let blank = fill(lineSnippet, ["CHARACTER_DIV": "", "LINE": ""])
         for scene in doc.scenes {
@@ -159,7 +173,96 @@ public enum DocxExporter {
                 }
             }
         }
-        xml += try snippet(template, "bodyEnd")
+        xml += applyMemoPageBorder(try snippet(template, "bodyEnd"), memo: memo)
         return xml
+    }
+
+    // MARK: - 書き込み欄
+
+    /// 段落の字下げ（twip）。テンプレートの段落スタイルの既定値と、断片に直接書いた値を合わせたもの
+    struct Indent { var left = 0, right = 0, hanging = 0, firstLine = 0 }
+
+    /// 書き込み欄をずらす段落スタイルの既定（styles.xml の値）と、行頭側の罫の有無
+    static func memoStyles(_ t: Template) -> [String: (indent: Indent, bordered: Bool)] {
+        switch t {
+        case .a4PortraitVertical:
+            return ["af0": (Indent(left: 4001, right: 150, hanging: 2801), true),       // 台詞
+                    "afa": (Indent(left: 2550, right: 150, hanging: 1350), true),       // ト書き（台詞を継ぐ）
+                    "af4": (Indent(left: 1200, right: 150, firstLine: 100), false)]     // 場面説明（罫なし）
+        case .a4PortraitHorizontal, .a4LandscapeVertical:
+            return ["a5": (Indent(left: 2698, hanging: 1560), true),                    // 台詞
+                    "a4": (Indent(left: 3408, hanging: 2270), true)]                    // ト書き・アクション（台詞を継ぐ）
+        }
+    }
+
+    /// 書き込み欄の長さ（twip）。テンプレートの台詞の 1 行目が始まる位置（左字下げ − ぶら下げ）
+    static func memoTwips(_ t: Template) -> Int { t == .a4PortraitVertical ? 2880 : 1138 }
+
+    /// 行頭側の罫（縦書きでは上の横線）の太さ・あき
+    static func memoBorder(_ t: Template) -> String {
+        t == .a4PortraitVertical ? #"w:val="single" w:sz="4" w:space="4" w:color="auto""# : #"w:val="single" w:sz="8" w:space="4" w:color="auto""#
+    }
+
+    /// テンプレートは書き込み欄が「上」（行頭側。横書きは左）。「下」なら台詞・ト書き・場面説明の段落を欄の長さだけ行頭へ寄せ、
+    /// 行末側の字下げを同じだけ増やして罫を行末側へ移す。「なし」なら行頭へ寄せて罫を外す。
+    /// 字下げは *Chars（字数指定）がスタイルに残っていると twip より優先されるので、0 にして twip で書く
+    static func applyMemo(_ snippet: String, template: Template, memo: MemoArea) -> String {
+        guard memo != .top else { return snippet }
+        let styles = memoStyles(template)
+        let shift = memoTwips(template)
+        var out = snippet
+        for m in matches(#"<w:pPr>(.*?)</w:pPr>"#, in: snippet).reversed() {
+            var inner = (snippet as NSString).substring(with: m.range(at: 1))
+            guard let styleID = firstGroup(#"<w:pStyle w:val="([^"]+)"/>"#, in: inner), let st = styles[styleID] else { continue }
+            var ind = st.indent
+            if let direct = firstGroup(#"<w:ind ([^>]*)/>"#, in: inner) {
+                func attr(_ name: String) -> Int? { firstGroup(#"w:\#(name)="(-?[0-9]+)""#, in: direct).flatMap { Int($0) } }
+                if let v = attr("left") { ind.left = v }
+                if let v = attr("right") { ind.right = v }
+                if let v = attr("hanging") { ind.hanging = v; ind.firstLine = 0 }
+                if let v = attr("firstLine") { ind.firstLine = v; ind.hanging = 0 }
+            }
+            ind.left -= shift
+            if memo == .bottom { ind.right += shift }
+            var indXML = #"<w:ind w:leftChars="0" w:left="\#(ind.left)" w:rightChars="0" w:right="\#(ind.right)""#
+            if ind.hanging > 0 { indXML += #" w:hangingChars="0" w:hanging="\#(ind.hanging)""# }
+            if ind.firstLine > 0 { indXML += #" w:firstLineChars="0" w:firstLine="\#(ind.firstLine)""# }
+            indXML += "/>"
+            let hadBorder = inner.contains("<w:pBdr>")
+            inner = replacing(#"<w:ind [^>]*/>"#, in: inner, with: "")
+            inner = replacing(#"<w:pBdr>.*?</w:pBdr>"#, in: inner, with: "")
+            // 並び順（pStyle → pBdr → … → spacing → ind → … → rPr）を守って差し込む
+            if st.bordered || hadBorder, let ps = inner.range(of: "<w:pStyle"), let e = inner.range(of: "/>", range: ps.lowerBound..<inner.endIndex) {
+                let bdr = memo == .bottom ? #"<w:pBdr><w:left w:val="nil"/><w:right \#(memoBorder(template))/></w:pBdr>"# : #"<w:pBdr><w:left w:val="nil"/></w:pBdr>"#
+                inner.insert(contentsOf: bdr, at: e.upperBound)
+            }
+            if let rp = inner.range(of: "<w:rPr>") { inner.insert(contentsOf: indXML, at: rp.lowerBound) } else { inner += indXML }
+            out = (out as NSString).replacingCharacters(in: m.range(at: 1), with: inner)
+        }
+        return out
+    }
+
+    /// A4縦 縦書きの本文ページの罫（ページ罫線の上辺）を書き込み欄の側へ。「なし」なら外す
+    static func applyMemoPageBorder(_ bodyEnd: String, memo: MemoArea) -> String {
+        switch memo {
+        case .top: return bodyEnd
+        case .bottom: return replacing(#"(<w:pgBorders>\s*)<w:top "#, in: bodyEnd, with: "$1<w:bottom ")
+        case .none: return replacing(#"<w:pgBorders>.*?</w:pgBorders>\s*"#, in: bodyEnd, with: "")
+        }
+    }
+
+    static func matches(_ pattern: String, in s: String) -> [NSTextCheckingResult] {
+        let re = try! NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators])
+        return re.matches(in: s, range: NSRange(location: 0, length: (s as NSString).length))
+    }
+
+    static func firstGroup(_ pattern: String, in s: String) -> String? {
+        guard let m = matches(pattern, in: s).first, m.numberOfRanges > 1 else { return nil }
+        return (s as NSString).substring(with: m.range(at: 1))
+    }
+
+    static func replacing(_ pattern: String, in s: String, with template: String) -> String {
+        let re = try! NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators])
+        return re.stringByReplacingMatches(in: s, range: NSRange(location: 0, length: (s as NSString).length), withTemplate: template)
     }
 }

@@ -11,6 +11,8 @@ code { background: #f3f1ec; padding: 1px 4px; border-radius: 3px; font-size: 10p
 figure { margin: 10px 0; page-break-inside: avoid; }
 img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
 li { margin: 2px 0; }
+table.compare th:first-child, table.compare td:first-child { white-space: normal; width: 44%; }
+table.compare { page-break-inside: auto; }
 </style></head><body><h1>ScenarioWriterSolo（Windows 版）マニュアル</h1>
 <p>β8　2026 年 9 月</p>
 <p>ScenarioWriterSolo は、舞台・映像の脚本を書くためのひとり用エディタです。この Windows 版は、Mac 版 ScenarioWriterSolo と同じ作品ファイル（<code>タイトル.scwd</code>）を読み書きします。縦書きでの編集が目玉です。</p>
@@ -60,7 +62,8 @@ li { margin: 2px 0; }
 <p>テキスト（.txt）や HTML の書き出しはこの版にはありません。</p>
 <h2>12. メニューとショートカット</h2>
 <table><thead><tr><th>メニュー</th><th>項目</th><th>ショートカット</th></tr></thead><tbody><tr><td>ファイル</td><td>新規… / 開く… / 保存 / 別名で保存… / Word の台本を書き出す… / 作品を閉じる / 終了</td><td>Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S / Ctrl+E / Ctrl+W</td></tr><tr><td>編集</td><td>元に戻す・やり直す・切り取り・コピー・貼り付け・すべて選択、行の追加・削除、場面を追加、登場人物を追加</td><td>（本文の中では Ctrl+Z / Ctrl+X / Ctrl+C / Ctrl+V など通常どおり）</td></tr><tr><td>表示</td><td>シナリオ編集〜スタイルの各画面、前後の場面、縦書きで編集、文字を大きく / 小さく</td><td>Ctrl+1〜7、Ctrl+[ / ]、Ctrl+Alt+T、Ctrl+= / Ctrl+-</td></tr><tr><td>設定</td><td>書式（本文の文字数・「」）…、スタイル…</td><td></td></tr><tr><td>ヘルプ</td><td>バージョン情報</td><td></td></tr></tbody></table>
-<h2>13. Mac 版との違い（この版でまだ無いもの）</h2>
-<ul><li>テキスト / HTML ファイルの書き出し（Word はあります。テキストと HTML は Mac 版で開いて書き出してください）</li><li>Web 版 ScenarioWriterCafe のデータの取り込み</li><li>行の追加・移動・削除の「元に戻す」（本文の文字入力は Ctrl+Z が効きます）</li><li>共通の設定ファイル（スタイルと書式は作品ファイルごとです）</li></ul>
+<h2>13. Mac 版との違い</h2>
+<p>Mac 版とこの Windows 版は同じ作品ファイル（.scwd）を読み書きします。できることの違いは次のとおりです（○ = ある、× = ない）。Windows 版に無い機能を使うときは、作品ファイルを Mac 版で開いてください。</p>
+<table class="compare"><thead><tr><th>機能</th><th>Mac 版</th><th>Windows 版</th></tr></thead><tbody><tr><td>作品ファイル（.scwd）の読み書き</td><td>○</td><td>○（Mac 版と相互に持ち運べます）</td></tr><tr><td>β5 より前の旧形式（SQLite）の作品</td><td>○（開けて、まとめて変換もできます）</td><td>×（Mac 版で変換してから）</td></tr><tr><td>保存せずに落ちたときの回復</td><td>○</td><td>×</td></tr><tr><td>最近使った作品</td><td>○</td><td>○</td></tr><tr><td>台本の編集（種別・登場人物・本文、縦書き / 横書き）</td><td>○</td><td>○</td></tr><tr><td>行の追加・移動・削除などの「元に戻す / やり直す」</td><td>○</td><td>×（本文の文字入力の Ctrl+Z だけ）</td></tr><tr><td>検索と置換</td><td>○</td><td>×</td></tr><tr><td>縦書きの編集画面のページ送り（‹ ›）</td><td>○</td><td>×</td></tr><tr><td>ミニマップ</td><td>○</td><td>×</td></tr><tr><td>編集画面の文字の大きさ</td><td>○（ツールバーのスライダー）</td><td>○（ツールバーの「文字」）</td></tr><tr><td>場面・登場人物・シノプシス・シナリオ情報</td><td>○</td><td>○</td></tr><tr><td>読む（縦書き / 横書き・文字の大きさ・場面へ飛ぶ・ページ送り）</td><td>○</td><td>○</td></tr><tr><td>スタイル</td><td>○（共通の設定。開いた作品に写す）</td><td>○（作品ファイルごと。次の新規作品に引き継ぐ）</td></tr><tr><td>書式（人物名欄・本文の文字数など）</td><td>○（設定 › 書式）</td><td>○（シナリオ情報）</td></tr><tr><td>書き出し: テキスト（.txt）</td><td>○</td><td>×</td></tr><tr><td>書き出し: Word（.docx）</td><td>○（書き込み欄を なし / 上 / 下 から選べる）</td><td>○（書き込み欄はテンプレートのまま＝上）</td></tr><tr><td>書き出し: PDF（アウトライン化・トンボ）</td><td>○</td><td>×</td></tr><tr><td>書き出し: XML（Word 2003）</td><td>○</td><td>×</td></tr><tr><td>書き出し: HTML（劇団員に渡す 1 ファイル）</td><td>○</td><td>×</td></tr><tr><td>Web 版 ScenarioWriterCafe との行き来（取り込み・書き出し）</td><td>○</td><td>×</td></tr></tbody></table>
 <h2>14. 困ったとき</h2>
 <ul><li><b>作品ファイルを開けません（旧形式）</b>: Mac 版 β5 以降で開いて保存すると開けるようになります。</li><li><b>文字が小さい / 大きい</b>: ツールバーの「文字」で編集画面の大きさを変えられます。「読む」画面は A- / A+ で。</li><li><b>アイコンが古いまま</b>: インストールし直したあとも変わらないときは、いったんサインアウトするか、コマンドプロンプトで <code>ie4uinit.exe -show</code> を実行してください。</li><li><b>問題の報告</b>: ICTCacao（dbu@ictcacao.com）まで。作品ファイルと、出ていたメッセージを添えてもらえると助かります。</li></ul></body></html>

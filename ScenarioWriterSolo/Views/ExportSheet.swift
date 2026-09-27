@@ -15,7 +15,7 @@ struct ExportSheet: View {
     @AppStorage("export.phone") private var phone = ""
     @AppStorage("export.email") private var email = ""
     @AppStorage("export.pdfTrimMarks") private var pdfTrimMarks = false
-    @AppStorage("export.pdfMemo") private var pdfMemoRaw = PdfExporter.MemoArea.top.rawValue
+    @AppStorage("export.memo") private var memoRaw = DocxExporter.MemoArea.top.rawValue
     @State private var writerName = ""
     @State private var useDate = true
     @State private var date = Date()
@@ -23,6 +23,7 @@ struct ExportSheet: View {
     private var encoding: TextExporter.Encoding { TextExporter.Encoding(rawValue: encodingRaw) ?? .utf8 }
     private var lineEnding: TextExporter.LineEnding { TextExporter.LineEnding(rawValue: lineEndingRaw) ?? .lf }
     private var template: DocxExporter.Template { DocxExporter.Template(rawValue: templateRaw) ?? .a4PortraitVertical }
+    private var memo: DocxExporter.MemoArea { DocxExporter.MemoArea(rawValue: memoRaw) ?? .top }
     private var cover: DocxExporter.CoverInfo {
         .init(writerName: writerName, writerId: writerId, version: version, date: useDate ? date : nil, address: address, phone: phone, email: email)
     }
@@ -54,6 +55,15 @@ struct ExportSheet: View {
                         ForEach(DocxExporter.Template.allCases) { t in Text(t.label).tag(t.rawValue) }
                     }
                     .pickerStyle(.segmented)
+                    HStack {
+                        Picker("書き込み欄", selection: $memoRaw) {
+                            ForEach(DocxExporter.MemoArea.allCases) { m in Text(m.label).tag(m.rawValue) }
+                        }
+                        .pickerStyle(.segmented)
+                        .fixedSize()
+                        Spacer()
+                        Text("本文ページの余白と区切りの罫。横書きでは 上 = 左、下 = 右").font(.caption).foregroundStyle(.secondary)
+                    }
                     TextField("作者名", text: $writerName)
                     TextField("脚本協会登録番号など", text: $writerId)
                     TextField("草稿バージョンなど（例: 第 1 稿）", text: $version)
@@ -66,18 +76,10 @@ struct ExportSheet: View {
                     TextField("電話番号", text: $phone)
                     TextField("電子メール", text: $email)
                     HStack {
-                        Picker("PDF の書き込み欄", selection: $pdfMemoRaw) {
-                            ForEach(PdfExporter.MemoArea.allCases) { m in Text(m.label).tag(m.rawValue) }
-                        }
-                        .pickerStyle(.segmented)
-                        .fixedSize()
-                        Text("本文ページの余白と区切りの罫（Word と同じ）。横書きでは上 = 左、下 = 右").font(.caption).foregroundStyle(.secondary)
-                    }
-                    HStack {
                         Toggle("PDF にトンボと裁ち落とし（3mm）を付ける", isOn: $pdfTrimMarks).toggleStyle(.checkbox)
                         Spacer()
-                        Button("PDF を保存…") { model.exportPdf(template: template, cover: cover, options: .init(trimMarks: pdfTrimMarks, memo: PdfExporter.MemoArea(rawValue: pdfMemoRaw) ?? .top)) }
-                        Button("Word を保存…") { model.exportDocx(template: template, cover: cover) }
+                        Button("PDF を保存…") { model.exportPdf(template: template, cover: cover, options: .init(trimMarks: pdfTrimMarks, memo: memo)) }
+                        Button("Word を保存…") { model.exportDocx(template: template, cover: cover, memo: memo) }
                     }
                 }
                 Section("そのほか") {

@@ -14,19 +14,7 @@ public enum PdfExporter {
     public typealias Template = DocxExporter.Template
     public typealias CoverInfo = DocxExporter.CoverInfo
 
-    /// 本文ページの書き込み欄（Word テンプレートの台詞の上の余白と区切りの罫）。
-    /// 縦書きは段の上 / 下、横書きは行頭側（左）/ 行末側（右）に取る
-    public enum MemoArea: String, CaseIterable, Identifiable, Sendable {
-        case none, top, bottom
-        public var id: String { rawValue }
-        public var label: String {
-            switch self {
-            case .none: return "なし"
-            case .top: return "上"
-            case .bottom: return "下"
-            }
-        }
-    }
+    public typealias MemoArea = DocxExporter.MemoArea
 
     public struct Options: Sendable {
         /// トンボを付け、仕上がりの外に裁ち落としとトンボの余白を足す
@@ -40,8 +28,6 @@ public enum PdfExporter {
         }
     }
 
-    /// 書き込み欄の幅は段の長さのこの割合（Word テンプレートは A4縦 縦書きで上余白から 2880twip = 144pt ≒ 段の 2 割）
-    static let memoRatio: CGFloat = 0.2
 
     public static func mm(_ v: CGFloat) -> CGFloat { v * 72 / 25.4 }
 
@@ -57,20 +43,35 @@ public enum PdfExporter {
         var fontSize: CGFloat
         /// 場面ごとに改ページする（A4縦 縦書きの Word テンプレートは「場面　柱」が改ページ前置き）
         var sceneBreak: Bool
+        /// 行送り・台詞の段落の後のあき（本文を fontSize で組むとき。小さくしたら同じ割合で詰める）
+        var pitch: CGFloat
+        var paragraphAfter: CGFloat
+        /// 書き込み欄の長さ（Word テンプレートの台詞の 1 行目が始まる位置 = 左字下げ − ぶら下げ）と、行末側の字下げ
+        var memo: CGFloat
+        var endIndent: CGFloat
+        /// 本文ページの書き込み欄の側の端に罫を引く（A4縦 縦書きの Word テンプレートのページ罫線）
+        var pageBorder: Bool
         var body: CGRect {
             CGRect(x: margin.left, y: margin.bottom,
                    width: size.width - margin.left - margin.right, height: size.height - margin.top - margin.bottom)
         }
 
+        /// Word テンプレート（deerstudio）の本文の値に合わせる（1 twip = 1/20 pt）
         static func of(_ t: Template) -> Page {
             let a4 = CGSize(width: 595.28, height: 841.89)
             switch t {
             case .a4PortraitVertical:
-                return Page(size: a4, margin: (72, 60, 72, 60), vertical: true, fontSize: 12, sceneBreak: true)
+                // 余白 上下 1440・左右 1080、台詞 14pt・行送り固定 440・段落後 360、書き込み欄 2880、行末字下げ 360、ページ罫線（上）
+                return Page(size: a4, margin: (72, 54, 72, 54), vertical: true, fontSize: 14, sceneBreak: true,
+                            pitch: 22, paragraphAfter: 18, memo: 144, endIndent: 18, pageBorder: true)
             case .a4PortraitHorizontal:
-                return Page(size: a4, margin: (72, 64, 80, 80), vertical: false, fontSize: 11, sceneBreak: false)
+                // 余白 上 1701・右 1134・下 2268・左 2268、台詞 10pt・1.5 行・段落後 120、書き込み欄 1138
+                return Page(size: a4, margin: (85, 57, 113, 113), vertical: false, fontSize: 10, sceneBreak: false,
+                            pitch: 18, paragraphAfter: 6, memo: 57, endIndent: 0, pageBorder: false)
             case .a4LandscapeVertical:
-                return Page(size: CGSize(width: a4.height, height: a4.width), margin: (80, 72, 64, 72), vertical: true, fontSize: 11, sceneBreak: false)
+                // 余白 上 2268・左右下 1701、台詞 10pt・1.5 行・段落後 120、書き込み欄 1138
+                return Page(size: CGSize(width: a4.height, height: a4.width), margin: (113, 85, 85, 85), vertical: true, fontSize: 10, sceneBreak: false,
+                            pitch: 18, paragraphAfter: 6, memo: 57, endIndent: 0, pageBorder: false)
             }
         }
     }
@@ -81,6 +82,8 @@ public enum PdfExporter {
         var numbered: Bool
         /// 書き込み欄と本文の境の罫の位置（段の頭からの長さ。pt）。nil なら引かない（本文ページだけ引く）
         var memoRule: CGFloat? = nil
+        /// 書き込み欄が上（行頭側）か
+        var memoTop = true
     }
 
     // MARK: - 書体
@@ -191,7 +194,10 @@ public enum PdfExporter {
                 let frame = CTFramesetterCreateFrame(fs, CFRange(location: start, length: 0), path, frameAttrs as CFDictionary)
                 fillOutlines(frame, in: page.body, text: sec.text, vertical: page.vertical, ctx)
                 let boxes = strokeSceneBoxes(frame, page: page, text: sec.text, ctx)
-                if let at = sec.memoRule { strokeMemoRule(page: page, at: at, avoiding: boxes, ctx) }
+                if let at = sec.memoRule {
+                    strokeMemoRule(page: page, at: at, avoiding: boxes, ctx)
+                    if page.pageBorder { strokePageBorder(page: page, top: sec.memoTop, ctx) }
+                }
                 if sec.numbered {
                     pageNo += 1
                     drawPageFurniture(ctx, page: page, title: doc.scenario.title, pageNo: pageNo, font: headerFont)
@@ -279,7 +285,7 @@ public enum PdfExporter {
 
     /// 書き込み欄の長さ（段の向き。pt）
     static func memoLength(_ page: Page, _ memo: MemoArea) -> CGFloat {
-        memo == .none ? 0 : ((page.vertical ? page.body.height : page.body.width) * memoRatio).rounded()
+        memo == .none ? 0 : page.memo
     }
 
     /// 書き込み欄と本文の境に、本文欄いっぱいの罫を 1 本引く（Word の台詞の段落罫と同じ位置）。
@@ -318,6 +324,16 @@ public enum PdfExporter {
         }
         ctx.setLineWidth(0.6)
         ctx.addPath(p)
+        ctx.strokePath()
+    }
+
+    /// A4縦 縦書きの Word テンプレートのページ罫線（本文欄の上端）。書き込み欄が下なら下端に引く
+    static func strokePageBorder(page: Page, top: Bool, _ ctx: CGContext) {
+        let b = page.body
+        let y = top ? b.maxY : b.minY
+        ctx.setLineWidth(0.5)
+        ctx.move(to: CGPoint(x: b.minX, y: y))
+        ctx.addLine(to: CGPoint(x: b.maxX, y: y))
         ctx.strokePath()
     }
 
@@ -427,12 +443,16 @@ public enum PdfExporter {
         // 書き込み欄を取るときは、残りの長さに 1 行が入るようにする。本文ページの段落は lead だけ下げて（右へ寄せて）始める
         let memoLen = memoLength(page, memo)
         let lead: CGFloat = memo == .top ? memoLen : 0
-        let fs = min(page.fontSize, ((columnLength - memoLen) / (lineChars + 0.3) * 2).rounded(.down) / 2)
-        let pitch = (fs * 1.8).rounded()
+        let fs = min(page.fontSize, ((columnLength - memoLen - page.endIndent) / (lineChars + 0.3) * 2).rounded(.down) / 2)
+        // 行送り・段落のあきは Word の値。文字を小さくしたら同じ割合で詰める
+        let scale = fs / page.fontSize
+        let pitch = (page.pitch * scale).rounded()
+        let paragraphAfter = (page.paragraphAfter * scale).rounded()
         // 行末を lineChars 字で揃える（字の送りの端数で 1 字手前で折れないよう、1 字に満たない余裕を足す）
         let lineEnd = lineChars * fs + fs * 0.3
         // 書き込み欄の罫: 上なら欄の端（本文の始まりの少し手前）、下なら 1 行の終わりのすぐ後ろ（残りがすべて書き込み欄）
-        let memoRule: CGFloat? = memo == .none ? nil : (memo == .top ? memoLen - fs * 0.5 : lineChars * fs + fs * 0.5)
+        // （Word の段落罫と同じく字から 4pt 離す）
+        let memoRule: CGFloat? = memo == .none ? nil : (memo == .top ? memoLen - 4 : lineChars * fs + 4)
         let mincho = font(minchoNames, fs)
         let gothic = font(gothicNames, fs)
         let title = doc.scenario.title
@@ -512,7 +532,7 @@ public enum PdfExporter {
         var body: Builder?
         for scene in doc.scenes {
             if body == nil || page.sceneBreak {
-                if let b = body { sections.append(Section(text: b.out, numbered: true, memoRule: memoRule)) }
+                if let b = body { sections.append(Section(text: b.out, numbered: true, memoRule: memoRule, memoTop: memo == .top)) }
                 body = Builder(page: page)
             }
             let b = body!
@@ -539,11 +559,11 @@ public enum PdfExporter {
                 }
                 let hanging = (nameW + bodyIndent) * fs
                 let p = Para(font: mincho, firstIndent: lead, headIndent: lead + hanging, tailIndent: lead + lineEnd, lineHeight: pitch,
-                             spacingBefore: CGFloat(st.marginBefore) * pitch, spacingAfter: pitch * 0.35 + CGFloat(st.marginAfter) * pitch)
+                             spacingBefore: CGFloat(st.marginBefore) * pitch, spacingAfter: paragraphAfter + CGFloat(st.marginAfter) * pitch)
                 b.add(head + TextFormat.spaces(Int(bodyIndent)) + text, p)
             }
         }
-        if let b = body { sections.append(Section(text: b.out, numbered: true, memoRule: memoRule)) }
+        if let b = body { sections.append(Section(text: b.out, numbered: true, memoRule: memoRule, memoTop: memo == .top)) }
         return sections
     }
 }
