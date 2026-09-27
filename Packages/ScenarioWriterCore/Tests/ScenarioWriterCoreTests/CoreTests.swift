@@ -247,7 +247,7 @@ final class CoreTests: XCTestCase {
         }
     }
 
-    /// Word の書き込み欄: 上はテンプレートのまま、下は台詞の罫を行末側へ（A4縦 縦書きはページ罫線も下へ）、なしは罫を外す
+    /// Word の書き込み欄: 上はテンプレートのまま、下は台詞の罫を行末側へ、なしは罫を外す（A4縦 縦書きのページ罫線は上のときだけ）
     func testDocxMemoArea() throws {
         let sc = Scenario(id: 1, title: "欄")
         let doc = ScenarioDocument(scenario: sc, synopsis: "", characters: [CastMember(id: 1, scenarioId: 1, orderNo: 100, name: "太郎", chara: "")],
@@ -271,7 +271,7 @@ final class CoreTests: XCTestCase {
             }
             if t == .a4PortraitVertical {
                 XCTAssertTrue(top.contains("<w:pgBorders>\n<w:top "))
-                XCTAssertTrue(bottom.contains("<w:pgBorders>\n<w:bottom "))
+                XCTAssertFalse(bottom.contains("<w:pgBorders>"))   // 下にするとページ番号と重なるので外す
                 XCTAssertFalse(none.contains("<w:pgBorders>"))
             }
         }

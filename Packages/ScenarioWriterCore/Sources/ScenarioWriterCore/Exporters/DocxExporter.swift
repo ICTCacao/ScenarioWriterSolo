@@ -242,13 +242,10 @@ public enum DocxExporter {
         return out
     }
 
-    /// A4縦 縦書きの本文ページの罫（ページ罫線の上辺）を書き込み欄の側へ。「なし」なら外す
+    /// A4縦 縦書きの本文ページの罫（ページ罫線の上辺）は、書き込み欄が「上」のときだけ残す
+    /// （下辺へ移すとページ番号と重なるので、「下」「なし」では外す）
     static func applyMemoPageBorder(_ bodyEnd: String, memo: MemoArea) -> String {
-        switch memo {
-        case .top: return bodyEnd
-        case .bottom: return replacing(#"(<w:pgBorders>\s*)<w:top "#, in: bodyEnd, with: "$1<w:bottom ")
-        case .none: return replacing(#"<w:pgBorders>.*?</w:pgBorders>\s*"#, in: bodyEnd, with: "")
-        }
+        memo == .top ? bodyEnd : replacing(#"<w:pgBorders>.*?</w:pgBorders>\s*"#, in: bodyEnd, with: "")
     }
 
     static func matches(_ pattern: String, in s: String) -> [NSTextCheckingResult] {

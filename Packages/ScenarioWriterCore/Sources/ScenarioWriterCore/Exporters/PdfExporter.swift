@@ -49,7 +49,7 @@ public enum PdfExporter {
         /// 書き込み欄の長さ（Word テンプレートの台詞の 1 行目が始まる位置 = 左字下げ − ぶら下げ）と、行末側の字下げ
         var memo: CGFloat
         var endIndent: CGFloat
-        /// 本文ページの書き込み欄の側の端に罫を引く（A4縦 縦書きの Word テンプレートのページ罫線）
+        /// 書き込み欄が上のとき、本文欄の上端に罫を引く（A4縦 縦書きの Word テンプレートのページ罫線）
         var pageBorder: Bool
         var body: CGRect {
             CGRect(x: margin.left, y: margin.bottom,
@@ -196,7 +196,8 @@ public enum PdfExporter {
                 let boxes = strokeSceneBoxes(frame, page: page, text: sec.text, ctx)
                 if let at = sec.memoRule {
                     strokeMemoRule(page: page, at: at, avoiding: boxes, ctx)
-                    if page.pageBorder { strokePageBorder(page: page, top: sec.memoTop, ctx) }
+                    // ページ罫線は書き込み欄が上のときだけ（Word と同じ）
+                    if page.pageBorder && sec.memoTop { strokePageBorder(page: page, ctx) }
                 }
                 if sec.numbered {
                     pageNo += 1
@@ -232,9 +233,7 @@ public enum PdfExporter {
 
     // MARK: - 場面の見出しの囲み（柱）
 
-    /// Word テンプレートの「場面　柱」と同じく、見出しの行を三方の罫で囲む。
-    /// 行頭側の端は字下げの位置、行末側は本文欄の端まで伸ばして開けておく
-    /// （縦書き: 右・上・左を引き下を開ける。横書き: 上・左・下を引き右を開ける）。
+    /// 場面の見出しの行を、本文欄の端から端まで（縦書きは上端から下端、横書きは左端から右端）の閉じた四角で囲む
     @discardableResult
     static func strokeSceneBoxes(_ frame: CTFrame, page: Page, text: NSAttributedString, _ ctx: CGContext) -> [CGRect] {
         let lines = CTFrameGetLines(frame) as? [CTLine] ?? []
@@ -253,12 +252,12 @@ public enum PdfExporter {
             let o = origins[i]
             let r: CGRect
             if page.vertical {
-                // 縦の行の原点は列の中心線の上端
-                r = CGRect(x: o.x - size / 2 - pad, y: rect.minY, width: size + pad * 2, height: o.y + pad - rect.minY)
+                // 縦の行の原点は列の中心線の上端。囲みは段の上端から下端まで
+                r = CGRect(x: o.x - size / 2 - pad, y: rect.minY, width: size + pad * 2, height: rect.height)
             } else {
                 var ascent: CGFloat = 0, descent: CGFloat = 0
                 _ = CTLineGetTypographicBounds(line, &ascent, &descent, nil)
-                r = CGRect(x: o.x - pad, y: o.y - descent - pad * 0.6, width: rect.maxX - (o.x - pad), height: ascent + descent + pad * 1.2)
+                r = CGRect(x: rect.minX, y: o.y - descent - pad * 0.6, width: rect.width, height: ascent + descent + pad * 1.2)
             }
             // 見出しが折り返して 2 行以上になったら 1 つの囲みにまとめる
             if prevHeading, let last = boxes.popLast() { boxes.append(last.union(r)) } else { boxes.append(r) }
@@ -267,16 +266,7 @@ public enum PdfExporter {
         guard !boxes.isEmpty else { return [] }
         ctx.setLineWidth(0.6)
         for b in boxes {
-            let p = CGMutablePath()
-            if page.vertical {
-                p.move(to: CGPoint(x: b.maxX, y: b.minY)); p.addLine(to: CGPoint(x: b.maxX, y: b.maxY))
-                p.addLine(to: CGPoint(x: b.minX, y: b.maxY)); p.addLine(to: CGPoint(x: b.minX, y: b.minY))
-            } else {
-                p.move(to: CGPoint(x: b.maxX, y: b.maxY)); p.addLine(to: CGPoint(x: b.minX, y: b.maxY))
-                p.addLine(to: CGPoint(x: b.minX, y: b.minY)); p.addLine(to: CGPoint(x: b.maxX, y: b.minY))
-            }
-            ctx.addPath(p)
-            ctx.strokePath()
+            ctx.stroke(b)
         }
         return boxes
     }
@@ -327,10 +317,10 @@ public enum PdfExporter {
         ctx.strokePath()
     }
 
-    /// A4縦 縦書きの Word テンプレートのページ罫線（本文欄の上端）。書き込み欄が下なら下端に引く
-    static func strokePageBorder(page: Page, top: Bool, _ ctx: CGContext) {
+    /// A4縦 縦書きの Word テンプレートのページ罫線（本文欄の上端）
+    static func strokePageBorder(page: Page, _ ctx: CGContext) {
         let b = page.body
-        let y = top ? b.maxY : b.minY
+        let y = b.maxY
         ctx.setLineWidth(0.5)
         ctx.move(to: CGPoint(x: b.minX, y: y))
         ctx.addLine(to: CGPoint(x: b.maxX, y: y))
