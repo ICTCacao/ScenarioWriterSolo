@@ -67,6 +67,7 @@ struct EmptyStateView: View {
                 Button("新規シナリオ…") { model.showNewScenario = true }
                     .keyboardShortcut(.defaultAction)
                 Button("Web 版のデータを取り込む…") { model.importDatabase() }
+                Button("PDF の台本を取り込む…") { model.importPdfScript() }
             }
             .padding(.top, 8)
             if model.hasLegacyDatabase {

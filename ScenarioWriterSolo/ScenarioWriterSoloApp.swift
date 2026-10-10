@@ -72,6 +72,7 @@ struct ScenarioWriterSoloApp: App {
                     .disabled(model.scenario == nil)
                 Divider()
                 Button("Web 版・バックアップから取り込む…") { model.importDatabase() }
+                Button("PDF の台本を取り込む…") { model.importPdfScript() }
                 Button("旧形式（SQLite）の作品ファイルをまとめて変換…") { model.convertLegacyWorks() }
                 Button("Finder で表示") { model.revealCurrent() }
                     .disabled(model.scenario == nil)

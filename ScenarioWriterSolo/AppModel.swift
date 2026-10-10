@@ -1278,6 +1278,54 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// 縦書きの台本 PDF（Word・InDesign などから書き出した、文字の情報があるもの）を読んで、新しい作品ファイルにする。
+    /// 本文の縦書きだけを取り込み、上下の帯の横書き（映像・音響・照明のきっかけ）やページ番号は捨てる。
+    func importPdfScript() {
+        let p = NSOpenPanel()
+        p.message = "縦書きの台本 PDF を選びます。人物名・セリフ・ト書・歌詞・場面（第◯場）を読み取って、新しい作品にします。"
+        p.prompt = "取り込む"
+        p.allowsMultipleSelection = false
+        p.canChooseDirectories = false
+        p.allowedContentTypes = [.pdf]
+        guard p.runModal() == .OK, let src = p.url else { return }
+        let scoped = src.startAccessingSecurityScopedResource()
+        defer { if scoped { src.stopAccessingSecurityScopedResource() } }
+        let result: PdfScriptImporter.Result
+        do {
+            result = try PdfScriptImporter.parse(url: src)
+        } catch {
+            errorMessage = "「\(src.lastPathComponent)」を読み取れませんでした。\n\(error.localizedDescription)"
+            return
+        }
+        let title = PdfScriptImporter.title(of: src) ?? src.deletingPathExtension().lastPathComponent
+        let lines = result.scenes.flatMap(\.lines)
+        let alert = NSAlert()
+        alert.messageText = "「\(title)」を取り込みます"
+        alert.informativeText = """
+            場面 \(result.scenes.count)（\(result.scenes.prefix(6).map(\.name).joined(separator: "・"))\(result.scenes.count > 6 ? "…" : "")）
+            登場人物 \(result.characters.count) 人（\(result.characters.prefix(8).joined(separator: "・"))\(result.characters.count > 8 ? "…" : "")）
+            セリフ \(lines.filter { $0.kind == .dialogue }.count) 行・ト書 \(lines.filter { $0.kind == .direction }.count) 行・歌詞 \(lines.filter { $0.kind == .lyric }.count) 行
+
+            上下の帯のきっかけ（映像・音響・照明）は取り込みません。読み取りの誤りは、取り込んだあとに種別や人物を直してください。
+            """
+        alert.addButton(withTitle: "保存先を選んで取り込む")
+        alert.addButton(withTitle: "キャンセル")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        guard confirmDiscardIfDirty(action: "取り込んだ作品を開く") else { return }
+        guard let url = savePanelForWork(title: title, message: "取り込んだ作品の保存先", directory: currentWorkURL?.deletingLastPathComponent()) else { return }
+        let ok: Bool = perform {
+            try? FileManager.default.removeItem(at: url)
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            let data = try buildWorkFile { w in try w.createScenario(Scenario(title: title), imported: result) }
+            try data.write(to: url, options: .atomic)
+            return true
+        } ?? false
+        guard ok else { return }
+        openWork(url)
+        section = .script
+    }
+
     /// β5 より前の作品ファイル（SQLite）を、フォルダの中でまとめて JSON にする。元のファイルは「旧形式」フォルダに移して残す。
     /// Windows 版は JSON しか読めないので、古いファイルが残っているときに使う
     func convertLegacyWorks() {
