@@ -2,7 +2,11 @@
 
 export interface Info { title: string; subtitle: string; writer: string; memo: string; date: string; category: number }
 export interface CastMember { id: number; name: string; chara: string }
-export interface Line { type: number; character?: number; text: string }
+/** uid は行の ID（開き直しても・行を動かしても変わらない。CacaoSoundCues Pro のきっかけなど、ほかのアプリが行を指すのに使う） */
+export interface Line { type: number; character?: number; text: string; uid?: string }
+
+/** 行の ID を作る（Mac 版と同じ大文字の UUID） */
+export const newLineUid = () => crypto.randomUUID().toUpperCase();
 export interface Scene { name: string; description: string; valid: boolean; minutes: number; seconds: number; lines: Line[] }
 export interface Style {
   id: number; order: number; name: string; size: number; color: string; indent: number; abbr: string; mode: number;
@@ -18,8 +22,8 @@ export interface ScwdFile {
 
 export const FORMAT = "scwd";
 export const VERSION = 1;
-export const APP_NAME = "ScenarioWriterWin β9.0.0";
-export const APP_VERSION = "β9.0.0";   // 表示用。インストーラの内部番号（数字のみ）は src-tauri/tauri.conf.json の version
+export const APP_NAME = "ScenarioWriterWin 1.0.0";
+export const APP_VERSION = "1.0.0";   // 表示用。インストーラの内部番号（数字のみ）は src-tauri/tauri.conf.json の version
 
 export const CATEGORIES: [number, string][] = [
   [0, "---"], [1, "演劇"], [2, "ミュージカル"], [3, "高校演劇"], [4, "大衆演劇"], [5, "映画"],
@@ -95,6 +99,7 @@ export function parse(text: string): ScwdFile {
       lines: Array.isArray(s?.lines) ? s.lines.map((l: any) => {
         const line: Line = { type: num(l?.type, 1), text: str(l?.text) };
         if (typeof l?.character === "number") line.character = l.character;
+        if (typeof l?.uid === "string" && l.uid) line.uid = l.uid;
         return line;
       }) : [],
     })) : [],
@@ -135,6 +140,8 @@ export function serialize(f: ScwdFile): string {
     }
     return v;
   };
+  // ID の無い行（古いファイル・取り込んだ行）には、ここで付けて覚える
+  for (const sc of f.scenes) for (const l of sc.lines) if (!l.uid) l.uid = newLineUid();
   const out: ScwdFile = { ...f, format: FORMAT, version: VERSION, app: APP_NAME };
   return JSON.stringify(sorted(out), null, 2) + "\n";
 }

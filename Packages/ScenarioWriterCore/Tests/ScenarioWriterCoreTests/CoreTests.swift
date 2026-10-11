@@ -53,6 +53,46 @@ final class CoreTests: XCTestCase {
         XCTAssertThrowsError(try ScenarioFile.decode(Data("SQLite format 3".utf8)))
     }
 
+    /// 行の ID（uid）: 書き出しのたびに同じ、行を動かしても・消して元に戻しても同じ、読み込むと引き継ぐ
+    func testLineUids() throws {
+        let store = try tempStore()
+        let id = try store.createScenario(Scenario(title: "ID"), acts: 1, scenesPerAct: 2, characterCount: 1)
+        let scenes = try store.scenes(scenarioId: id)
+        let a = try store.insertLine(ScriptLine(scenarioId: id, sceneId: scenes[0].id, type: 1, text: "一"), after: nil)
+        _ = try store.insertLine(ScriptLine(scenarioId: id, sceneId: scenes[0].id, type: 8, text: "SE 電話"), after: a)
+
+        let f1 = try store.exportFile(scenarioId: id, app: "test")
+        let u = f1.scenes[0].lines.map(\.uid)
+        XCTAssertEqual(u.compactMap { $0 }.count, 2)
+        XCTAssertNotEqual(u[0], u[1])
+        XCTAssertEqual(try store.exportFile(scenarioId: id, app: "test").scenes[0].lines.map(\.uid), u)
+
+        // 別の場面へ動かしても同じ
+        try store.moveLine(id: a, toScene: scenes[1].id)
+        XCTAssertEqual(try store.exportFile(scenarioId: id, app: "test").scenes[1].lines.first?.uid, u[0])
+        // 消して元に戻しても同じ
+        let line = try XCTUnwrap(try store.line(id: a))
+        try store.deleteLine(id: a)
+        try store.insertLine(restoring: line)
+        XCTAssertEqual(try store.exportFile(scenarioId: id, app: "test").scenes[1].lines.first?.uid, u[0])
+
+        // ファイルに書いて別の DB に読み込んでも同じ
+        let back = try ScenarioFile.decode(try store.exportFile(scenarioId: id, app: "test").encode())
+        let other = try tempStore()
+        let nid = try other.importFile(back)
+        let f2 = try other.exportFile(scenarioId: nid, app: "test")
+        XCTAssertEqual(f2.scenes[0].lines.first?.uid, u[1])
+        XCTAssertEqual(f2.scenes[1].lines.first?.uid, u[0])
+
+        // ID の無い古いファイルは、読み込んで書き出すときに付く
+        var old = back
+        for i in old.scenes.indices { for j in old.scenes[i].lines.indices { old.scenes[i].lines[j].uid = nil } }
+        XCTAssertFalse(String(decoding: try old.encode(), as: UTF8.self).contains("\"uid\""))
+        let oid = try other.importFile(old)
+        let f3 = try other.exportFile(scenarioId: oid, app: "test")
+        XCTAssertEqual(f3.scenes.flatMap(\.lines).compactMap(\.uid).count, 2)
+    }
+
     func testTextStyles() throws {
         let store = try tempStore()
         XCTAssertEqual(try store.textStyles().count, TextStyleKind.allCases.count)

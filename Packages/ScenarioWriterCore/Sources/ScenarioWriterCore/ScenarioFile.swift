@@ -45,10 +45,15 @@ public struct ScenarioFile: Codable, Sendable, Equatable {
         public var type: Int        // styles[].id と結びつく種別番号（1=セリフ 2=ト書 …）
         public var character: Int64?  // characters[].id。人物なしなら省略
         public var text = ""        // 改行は "\n"
-        public init(type: Int, character: Int64? = nil, text: String = "") { self.type = type; self.character = character; self.text = text }
+        /// 行の ID（UUID の文字列）。開き直しても・行を動かしても変わらない。ほかのアプリが行を指すのに使う。古いファイルには無い
+        public var uid: String?
+        public init(type: Int, character: Int64? = nil, text: String = "", uid: String? = nil) {
+            self.type = type; self.character = character; self.text = text; self.uid = uid
+        }
         public init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             type = c.value(.type, 1); character = try c.decodeIfPresent(Int64.self, forKey: .character); text = c.value(.text, "")
+            uid = (try? c.decodeIfPresent(String.self, forKey: .uid)).flatMap { $0.isEmpty ? nil : $0 }
         }
     }
 
@@ -196,6 +201,26 @@ extension ScenarioStore {
         try db.run("UPDATE SW_SCENARIO SET SCENARIO_DATE = ? WHERE SCENARIO_ID = ?", [.text(date), .int(id)])
     }
 
+    /// 作品の各行の ID（行の DB の ID → UID）。まだ ID の無い行には、ここで新しく付けて覚える
+    func lineUids(scenarioId: Int64) throws -> [Int64: String] {
+        var map: [Int64: String] = [:]
+        for r in try db.query("""
+            SELECT L.SCENARIO_LINES_ID AS LID, U.UID AS UID FROM SW_SCENARIO_LINES L
+            LEFT JOIN SW_SOLO_LINE_UID U ON U.SCENARIO_LINES_ID = L.SCENARIO_LINES_ID
+            WHERE L.SCENARIO_ID = ?
+            """, [.int(scenarioId)]) {
+            guard let lid = r.int("LID") else { continue }
+            if let uid = r.text("UID"), !uid.isEmpty {
+                map[lid] = uid
+            } else {
+                let uid = UUID().uuidString
+                try db.run("INSERT OR REPLACE INTO SW_SOLO_LINE_UID (SCENARIO_LINES_ID, UID) VALUES (?, ?)", [.int(lid), .text(uid)])
+                map[lid] = uid
+            }
+        }
+        return map
+    }
+
     /// 1 作品を作品ファイルの形にする
     public func exportFile(scenarioId: Int64, app: String) throws -> ScenarioFile {
         guard let sc = try scenario(id: scenarioId) else { throw SQLiteError(code: 0, message: "シナリオがありません") }
@@ -207,9 +232,10 @@ extension ScenarioStore {
         f.characters = try characters(scenarioId: scenarioId).map { ScenarioFile.Character(id: $0.id, name: $0.name, chara: $0.chara) }
         var byScene: [Int64: [ScriptLine]] = [:]
         for l in try allLines(scenarioId: scenarioId) { byScene[l.sceneId, default: []].append(l) }
+        let uids = try lineUids(scenarioId: scenarioId)
         f.scenes = try scenes(scenarioId: scenarioId).map { s in
             ScenarioFile.Scene(name: s.name, description: s.description, valid: s.validCd == 0, minutes: s.timeMin, seconds: s.timeSec,
-                               lines: (byScene[s.id] ?? []).map { ScenarioFile.Line(type: $0.type, character: $0.characterId, text: $0.text) })
+                               lines: (byScene[s.id] ?? []).map { ScenarioFile.Line(type: $0.type, character: $0.characterId, text: $0.text, uid: uids[$0.id]) })
         }
         f.styles = try styles().map { s in
             var st = ScenarioFile.Style(id: s.styleId)
@@ -267,6 +293,10 @@ extension ScenarioStore {
                     let charVal: SQLiteDatabase.SQLiteValue? = l.character.flatMap { charMap[$0] }.map { .int($0) }
                     try db.run("INSERT INTO SW_SCENARIO_LINES (SCENARIO_ID, SCENE_ID, SCENARIO_LINES_ORDER_NO, SCENARIO_TYPE, CHARACTER_ID, SCENARIO_LINES) VALUES (?, ?, ?, ?, ?, ?)",
                                [.int(id), .int(sid), .real(lineOrder), .i(l.type), charVal, .text(DBText.toDB(l.text))])
+                    // 行の ID はファイルのものを引き継ぐ（無ければ書き出すときに付ける）
+                    if let uid = l.uid {
+                        try db.run("INSERT OR REPLACE INTO SW_SOLO_LINE_UID (SCENARIO_LINES_ID, UID) VALUES (?, ?)", [.int(db.lastInsertRowId), .text(uid)])
+                    }
                 }
             }
             if let b64 = f.thumbnail, let png = Data(base64Encoded: b64) { try setThumbnail(scenarioId: id, png: png) }

@@ -35,7 +35,7 @@ function updateTitle() {
   const f = state.file;
   const name = f ? (f.scenario.title || "無題") : "作品を開いていません";
   $("docTitle").textContent = f ? `${name}${state.dirty ? " — 未保存の変更あり（Ctrl+S で保存）" : ""}` : name;
-  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 β9.0.0）`).catch(() => {});
+  win?.setTitle(`${f ? (state.dirty ? "● " : "") + name + " — " : ""}ScenarioWriterSolo（Windows 版 1.0.0）`).catch(() => {});
 }
 
 function markDirty() { if (!state.dirty) { state.dirty = true; updateTitle(); } }
@@ -403,7 +403,7 @@ function insertLine(at: number) {
   const scene = f.scenes[state.scene];
   const prev = scene.lines[Math.max(0, at - 1)];
   // 直前の行が名前を出す種別ならその人物を、そうでなければセリフを既定にする
-  const line: M.Line = { type: prev ? prev.type : 1, text: "" };
+  const line: M.Line = { type: prev ? prev.type : 1, text: "", uid: M.newLineUid() };
   if (prev?.character !== undefined && M.resolveStyle(f, line.type).showsName) line.character = prev.character;
   scene.lines.splice(at, 0, line);
   markDirty();

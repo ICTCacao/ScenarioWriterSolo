@@ -179,6 +179,15 @@ public final class ScenarioStore {
         )
         """
 
+    /// Solo だけの行の ID（作品ファイルの lines[].uid）。台本の行を、ほかのアプリ（CacaoSoundCues Pro のきっかけなど）が
+    /// 指し続けられるように、作品を開き直しても・行を動かしても変わらない ID を持つ。Web 版の表には列を足さない
+    static let lineUidTableSQL = """
+        CREATE TABLE IF NOT EXISTS SW_SOLO_LINE_UID (
+          SCENARIO_LINES_ID INTEGER NOT NULL PRIMARY KEY,
+          UID TEXT NOT NULL
+        )
+        """
+
     /// 既定の USER STYLE。作者（ICTCacao）が実運用で整えたもの（2026-09-22「きつね」の設定）。
     /// Web 版のテンプレート（USER_ID=0、21 種・サイズ 12）とは違い、13 種・サイズ 14・前後の余白付き。
     /// (styleId, orderNo, name, fontSize, color, indent, abbreviation, wordMode, marginBefore, marginAfter)
@@ -202,6 +211,7 @@ public final class ScenarioStore {
         for sql in Self.schemaSQL { try db.exec(sql) }
         try db.exec(Self.marginTableSQL)
         try db.exec(Self.textStyleTableSQL)
+        try db.exec(Self.lineUidTableSQL)
         // 古い Web 版 DB には USE_KAGIKAKKO 列が無いことがある
         if try !db.columnExists(table: "SW_USER_OPTION_SETTING", column: "USE_KAGIKAKKO") {
             try db.exec("ALTER TABLE SW_USER_OPTION_SETTING ADD COLUMN USE_KAGIKAKKO INTEGER NOT NULL DEFAULT 1")
